@@ -15,13 +15,13 @@ tags:
 
 # regex
 
-  CAST(regexp_extract(message, '(.*)(online_push=)([0-9]+)(.*)', 3) AS INT)
+  CAST(regexp_extract(message, '(.*)(online_push=)([0-9]+)(.*)', 3) AS INT)   
 
 # filter
-  dfs.select(sum("online_push")).show();
-  dfs_ts_pc.groupBy("ts_pc_type").count.show();
-  dfs_rt.filter($"msg_type"=== 4).groupBy("cli_platform").count.show();
-  dfs_rt.filter($"msg_type" > 4).groupBy("cli_platform").count.show();
+  dfs.select(sum("online_push")).show();   
+  dfs_ts_pc.groupBy("ts_pc_type").count.show();   
+  dfs_rt.filter($"msg_type"=== 4).groupBy("cli_platform").count.show();   
+  dfs_rt.filter($"msg_type" > 4).groupBy("cli_platform").count.show();   
 
 
 # 常用操作
