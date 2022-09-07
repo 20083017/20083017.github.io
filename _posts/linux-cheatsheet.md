@@ -46,6 +46,9 @@ tags:
   
 #### top
 
+top 重要:各个参数的含义, 系统cpu使用率, 业务CPU使用率,swap等
+[linux的top参数含义详解]https://www.cnblogs.com/ggjucheng/archive/2012/01/08/2316399.html
+
 #### 查看线程cpu使用率
 
 
