@@ -56,3 +56,13 @@ top 重要:各个参数的含义, 系统cpu使用率, 业务CPU使用率,swap等
 	ps -T -p ${pid} 
 
 
+#### 使用gcore
+最初统计的时候，发现CPU高的情况会出现1秒多的时间，如果发现CPU高负载时，直接调用gcore {pid}的命令，可以保留堆栈信息，明确具体高负载的位置。
+
+将使用gcore的指令，添加到统计工具中取，设置CPU上门限触发。
+
+通过gdb看了几个coredump文件，发现堆栈和函数调用基本一致。可以明确的看到，大量的耗时发生在了AddActInfoV3这一函数中：
+![image](https://user-images.githubusercontent.com/8308226/188916763-a1e6961a-3e46-407e-97db-465637353bbe.png)
+
+
+
