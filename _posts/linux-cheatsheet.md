@@ -43,5 +43,13 @@ tags:
   每s采集99次,-p  pid
   perf record -F99 -g -a -e cpu-clock -p 23801
   perf report -i perf.data
+  
+#### top
+
+#### 查看线程cpu使用率
+
+
+#### 查看进程线程数量
+	ps -T -p ${pid} 
 
 
