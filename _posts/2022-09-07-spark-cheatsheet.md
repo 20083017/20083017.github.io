@@ -24,7 +24,11 @@ tags:
   dfs_rt.filter($"msg_type" > 4).groupBy("cli_platform").count.show();   
 
 
-# 常用操作
+# join
+https://spark.apache.org/docs/latest/sql-ref-datatypes.html
+
+# DataType
+https://spark.apache.org/docs/latest/sql-ref-datatypes.html
 
 #### 创建仓库（初始化）
 
