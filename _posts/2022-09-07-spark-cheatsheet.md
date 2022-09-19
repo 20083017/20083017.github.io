@@ -16,6 +16,8 @@ tags:
 # regex
 
   CAST(regexp_extract(message, '(.*)(online_push=)([0-9]+)(.*)', 3) AS INT)   
+  
+  特殊字符加 \
 
 # filter
   dfs.select(sum("online_push")).show();   
