@@ -55,7 +55,16 @@ top 重要:各个参数的含义, 系统cpu使用率, 业务CPU使用率,swap等
 #### 查看进程线程数量
 	ps -T -p ${pid} 
 
+#### ip 正则  
+ip grep   
+grep -E "[^^][0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"   
+grep -oE "[^^][0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"   3.log   --col  
 
+#### xargs 执行shell
+	cat 2.txt | xargs -I {} sh -c {}  
+#### scp	
+scp output/bin/test {user}@{host}:{path}  
+scp -v -r yun_conf {user}@{host}:{path}  
 #### 使用gcore
 最初统计的时候，发现CPU高的情况会出现1秒多的时间，如果发现CPU高负载时，直接调用gcore {pid}的命令，可以保留堆栈信息，明确具体高负载的位置。
 
