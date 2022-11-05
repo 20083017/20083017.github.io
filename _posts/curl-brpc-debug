@@ -1,0 +1,26 @@
+
+---
+layout:     post
+title:      brpc curl json
+subtitle:   工具网站
+date:       2022-11-05
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - Tool
+---
+
+>随便整理的一些自用的工具网站
+
+
+# brpc 测试操作
+
+#### http拼接（初始化）
+	curl -H "Content-Type: application/json" -X POST -d @test.push.json http://127.0.0.1:port/xxx.XXXService/save_message
+  xxx.XXXService 为brpc继承的基类的类名
+#### curl
+ 	curl json
+    request的json串
+{"order_list":[{"type":7,"id":0}],"sort_type":2, "uid":3000055431}
+
