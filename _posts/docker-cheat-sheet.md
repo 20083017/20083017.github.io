@@ -90,11 +90,11 @@ $ mkdir /tmp/docker_install && cd /tmp/docker_install
 $ wget "http://koala.dmop.baidu.com:8080/fc/getfilebyid?id=8829" -O docker-1.12.5.tar.gz && tar -zxvf docker-1.12.5.tar.gz && rm -rf docker-1.12.5.tar.gz
 $ mv docker/* /usr/bin && rm -rf docker
 四、启动
-1、配置厂内仓库
+1、配置仓库
 $ vim /etc/docker/daemon.json
 仓库配置文件，增加如下内容
 {
-  "insecure-registries" : ["registry.det.baidu.com","iregistry.baidu-int.com"]
+  "insecure-registries" : ["",""]
 }
 如果保存不了，可能是没有 docker 文件夹，先 mkdir /etc/docker
 2、启动
