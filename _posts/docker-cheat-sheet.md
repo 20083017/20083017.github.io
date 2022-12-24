@@ -103,3 +103,17 @@ $ nohup /usr/bin/dockerd --bip=10.0.4.1/24 -H tcp://127.0.0.1:2375 -H unix:///va
 【注】：docker重启
 1. kill -9 pid
 2. 运行上面的启动命令即可
+
+
+
+
+
+
+
+
+
+
+docker 命令
+https://www.runoob.com/docker/docker-image-usage.html
+
+
