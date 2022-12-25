@@ -94,8 +94,10 @@ $ mv docker/* /usr/bin && rm -rf docker
 $ vim /etc/docker/daemon.json
 仓库配置文件，增加如下内容
 {
-  "insecure-registries" : ["",""]
+  "insecure-registries" : ["",""],
+  "graph":"/var/lib/docker"
 }
+将默认路径调整，否则容易出现，no space left。
 如果保存不了，可能是没有 docker 文件夹，先 mkdir /etc/docker
 2、启动
 $ nohup /usr/bin/dockerd --bip=10.0.4.1/24 -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock >/dev/null 2>/dev/null &
@@ -115,5 +117,9 @@ $ nohup /usr/bin/dockerd --bip=10.0.4.1/24 -H tcp://127.0.0.1:2375 -H unix:///va
 
 docker 命令
 https://www.runoob.com/docker/docker-image-usage.html
+
+docker rmi -f name:tag
+docker rmi -f imageid
+
 
 
