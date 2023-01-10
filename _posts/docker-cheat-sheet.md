@@ -122,4 +122,8 @@ docker rmi -f name:tag
 docker rmi -f imageid
 
 
+docker run -u root -t -i  bca1732dcdeb   /bin/bash
+
+
+
 
