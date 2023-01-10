@@ -24,3 +24,6 @@ tags:
     request的json串
 {"order_list":[{"type":7,"id":0}],"sort_type":2, "uid":3000055431}
 
+msgid_list内容是个  json 字符串
+
+-d'{"msgid_list":"[{\"s_basemsgid\":1754525909335003066,\"from\":1387396368,\"to\":2027960184,\"t\":1,\"s_msgid2\":300011450}]"}' 
