@@ -1,3 +1,10 @@
 
 
 https://www.cnblogs.com/jabnih/p/4814212.html
+
+
+删除以某字符开头的redis key
+
+ ./redis-cli -h ip -p port  keys "GO*" | xargs redis-cli  -h ip -p port   del
+ 
+ 
