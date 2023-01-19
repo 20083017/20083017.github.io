@@ -7,7 +7,7 @@ APNs 全称是 Apple Push Notification service （苹果推送通知服务）。
 密钥标识符没有时效，可以永久使用，每个密钥标识符对应一个密钥文件，如果密钥文件泄露，可以注销密钥标识符使其失效。
 
 
-#使用脚本测试 APNs
+# 使用脚本测试 APNs
 
 开发环境下使用沙盒服务器：api.sandbox.push.apple.com
 
