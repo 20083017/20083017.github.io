@@ -69,8 +69,65 @@ AUTHENTICATION_TOKEN="${JWT_HEADER}.${JWT_CLAIMS}.${JWT_SIGNED_HEADER_CLAIMS}"
 ```
 
 
+# jwt-cpp 测试签名代码
 
+p8文件转换为pem文件
 
+```
+openssl pkcs8 -nocrypt -in AuthKey_AZ495JLZUJ.p8   -out AuthKey.pem
+```
 
+```
+
+//     std::string rsa_priv_key = R"(-----BEGIN PRIVATE KEY-----
+// MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgiYjBk9AwaYG2o+aD
+// 455NWrS98cG8h2VOt5y9QYbBwoChRANCAARVo+QFUSYq72Fo7eUs6SatF3XzFPyC
+// /HO1KGJA0mxx0l0X2fXDtUoH0nT1/5xc7sw+G6fqchMWp1trrYCClrfo
+// -----END PRIVATE KEY-----)";
+
+//     auto token = jwt::create()
+//                      .set_issuer("6T9LLJKSM4")   //TEAM_ID
+//                      .set_key_id("AZ495JLZUJ")   //AUTH_KEY_ID
+//                      .set_type("JWS")
+//                      .set_id("com.baidu.baiduhitest")
+//                      .set_issued_at(std::chrono::system_clock::now())
+//                      .set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{36000})
+//                     //  .set_payload_claim("sample", jwt::claim(std::string{"test"}))
+//                      .sign(jwt::algorithm::es256("", rsa_priv_key, "", ""));
+
+//     std::cout << "token:\n" << token << std::endl;
+
+```
+
+jwt-cpp代码选择es256的原因是，根据shell的token进行decode,decode的结果为ES256  ES256的含义是 使用私钥进行 sha256签名  ecdsa的签名
+而es256签名算法，需要使用pem文件，不能使用p8文件，所以这里需要将p8文件转换为pem文件。
+
+```
+hello jwt-cpp!
+iat = 1674094299
+jwt-cpp decode success!
+hello jwt-cpp!
+iss = "6T9LLJKSM4"
+jwt-cpp decode success!
+alg = "ES256"
+kid = "AZ495JLZUJ"
+```
+
+```
+    // std::string token = "eyJhbGciOiJFUzI1NiIsImtpZCI6IkFaNDk1SkxaVUoiLCJ0eXAiOiJKV1MifQ.eyJleHAiOjE2NzQyMzQ3NjksImlhdCI6MTY3NDE5ODc2OSwiaXNzIjoiNlQ5TExKS1NNNCIsImp0aSI6ImNvbS5iYWlkdS5iYWlkdWhpdGVzdCIsInNhbXBsZSI6InRlc3QifQ.2pjy7NDyDmF2kVi9U8yAU5op4fqxOaZGKFKdW_vpgyAQcRMtniNhkMZOWiJWeK9NWrVcn8Xwi5hwJvK6XAJKbQ";
+    // auto decoded = jwt::decode(token);
+
+    // for(auto& e : decoded.get_payload_json())
+    // {
+    //     std::cout << "hello jwt-cpp!" << std::endl;
+    //     std::cout << e.first << " = " << e.second << std::endl;
+    //     std::cout << "jwt-cpp decode success!" << std::endl;
+    // }
+
+    // for (auto& e : decoded.get_header_json())
+    // {
+    //     std::cout << e.first << " = " << e.second << std::endl;
+    // }
+```
 
 
