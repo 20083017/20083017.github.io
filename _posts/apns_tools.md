@@ -149,16 +149,16 @@ jwt::create()：生成一个token；同时你可以设置token的过期时间，
 
 
 # 参考链接
-https://www.cnblogs.com/moodlxs/archive/2012/10/15/2724318.html
-https://eclipsesource.com/blogs/2016/09/07/tutorial-code-signing-and-verification-with-openssl/
-https://0x90e.github.io/2017/02/12/verify_a_signature_with_certificate/
-https://juejin.cn/post/6991476688345366564
-https://www.cnblogs.com/tml839720759/p/3926006.html
-https://www.cnblogs.com/bohat/p/12482357.html
-https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns?language=objc
+https://www.cnblogs.com/moodlxs/archive/2012/10/15/2724318.html   
+https://eclipsesource.com/blogs/2016/09/07/tutorial-code-signing-and-verification-with-openssl/   
+https://0x90e.github.io/2017/02/12/verify_a_signature_with_certificate/   
+https://juejin.cn/post/6991476688345366564   
+https://www.cnblogs.com/tml839720759/p/3926006.html   
+https://www.cnblogs.com/bohat/p/12482357.html   
+https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns?language=objc   
 https://forums.mbed.com/t/jwt-es256-token-using-ecdsa/13068    
 code   
-https://github.com/Thalhammer/jwt-cpp
+https://github.com/Thalhammer/jwt-cpp   
 https://github.com/arun11299/cpp-jwt
 
 
