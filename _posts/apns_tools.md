@@ -131,3 +131,36 @@ kid = "AZ495JLZUJ"
 ```
 
 
+# jwt 函数简析
+
+decode()函数：对你的token进行解码；
+
+get_payload_claims()：获取jwt的payload的所有声明，利用std::cout << e1.first << " = " << e1.second.to_json() << std::endl;这句话可以打印输出jwt的负载部分；
+
+get_header_claims()：获取jwt的header的所有声明，并同时可以打印输出jwt的头部；
+
+此处，verify需要使用pubkey，使用何种算法，需要看
+jwt::verify().allow_algorithm(jwt::algorithm::hs256{"secret"}).with_issuer("auth0")：声明一个解码器，利用该解码器可以对你的token值进行验证，hs256是你采用的加密算法，“secret”是你的密钥，这里可以根据自己的实际需求进行更改；
+
+verifier.verify()：验证你的token值是否正确。这里我根据自己的实际情况对github上面的开源库做了略微的修改，使其实现：如果token正确的话返回true，token错误返回false；
+
+此处，create使用prikey
+jwt::create()：生成一个token；同时你可以设置token的过期时间，上述程序没有设置token的过期时间。
+
+
+# 参考链接
+https://www.cnblogs.com/moodlxs/archive/2012/10/15/2724318.html
+https://eclipsesource.com/blogs/2016/09/07/tutorial-code-signing-and-verification-with-openssl/
+https://0x90e.github.io/2017/02/12/verify_a_signature_with_certificate/
+https://juejin.cn/post/6991476688345366564
+https://www.cnblogs.com/tml839720759/p/3926006.html
+https://www.cnblogs.com/bohat/p/12482357.html
+https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns?language=objc
+code
+https://github.com/Thalhammer/jwt-cpp
+https://github.com/arun11299/cpp-jwt
+
+
+
+
+
