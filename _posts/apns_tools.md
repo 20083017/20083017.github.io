@@ -148,6 +148,67 @@ verifier.verify()：验证你的token值是否正确。这里我根据自己的�
 jwt::create()：生成一个token；同时你可以设置token的过期时间，上述程序没有设置token的过期时间。
 
 
+```
+
+
+        // std::string token = "eyJhbGciOiJFUzI1NiIsImtpZCI6IkFaNDk1SkxaVUoiLCJ0eXAiOiJKV1MifQ.eyJleHAiOjE2NzQyMzQ3NjksImlhdCI6MTY3NDE5ODc2OSwiaXNzIjoiNlQ5TExKS1NNNCIsImp0aSI6ImNvbS5iYWlkdS5iYWlkdWhpdGVzdCIsInNhbXBsZSI6InRlc3QifQ.2pjy7NDyDmF2kVi9U8yAU5op4fqxOaZGKFKdW_vpgyAQcRMtniNhkMZOWiJWeK9NWrVcn8Xwi5hwJvK6XAJKbQ";
+    // auto decoded = jwt::decode(token);
+
+    // for(auto& e : decoded.get_payload_json())
+    // {
+    //     std::cout << "hello jwt-cpp!" << std::endl;
+    //     std::cout << e.first << " = " << e.second << std::endl;
+    //     std::cout << "jwt-cpp decode success!" << std::endl;
+    // }
+
+    // for (auto& e : decoded.get_header_json())
+    // {
+    //     std::cout << e.first << " = " << e.second << std::endl;
+    // }
+
+
+    // auto verifier = jwt::verify()
+    // .allow_algorithm(jwt::algorithm::hs256{ R"(LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ2lZakJrOUF3YVlHMm8rYUQKNDU1TldyUzk4Y0c4aDJWT3Q1eTlRWWJCd29DaFJBTkNBQVJWbytRRlVTWXE3MkZvN2VVczZTYXRGM1h6RlB5QwovSE8xS0dKQTBteHgwbDBYMmZYRHRVb0gwblQxLzV4YzdzdytHNmZxY2hNV3AxdHJyWUNDbHJmbwotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==)" })
+    // .with_issuer("6T9LLJKSM4");
+
+    // verifier.verify(decoded);
+
+//     token = jwt::create()
+//         .set_algorithm("ES256")
+//         // .set
+//         .set_issuer("6T9LLJKSM4")
+//         .set_key_id("AZ495JLZUJ")
+//         .set_type("JWT")
+//         .set_payload_claim("sample", jwt::claim(std::string("test")))
+//         // .sign(jwt::algorithm::hs256{"AZ495JLZUJ"});
+//         .sign(jwt::algorithm::hs256{R"(-----BEGIN PRIVATE KEY-----
+// MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgiYjBk9AwaYG2o+aD
+// 455NWrS98cG8h2VOt5y9QYbBwoCgCgYIKoZIzj0DAQehRANCAARVo+QFUSYq72Fo
+// 7eUs6SatF3XzFPyC/HO1KGJA0mxx0l0X2fXDtUoH0nT1/5xc7sw+G6fqchMWp1tr
+// rYCClrfo
+// -----END PRIVATE KEY-----)"});
+
+//     std::cout << token << std::endl;
+
+//     std::string rsa_priv_key = R"(-----BEGIN PRIVATE KEY-----
+// MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgiYjBk9AwaYG2o+aD
+// 455NWrS98cG8h2VOt5y9QYbBwoChRANCAARVo+QFUSYq72Fo7eUs6SatF3XzFPyC
+// /HO1KGJA0mxx0l0X2fXDtUoH0nT1/5xc7sw+G6fqchMWp1trrYCClrfo
+// -----END PRIVATE KEY-----)";
+
+//     auto token = jwt::create()
+//                      .set_issuer("6T9LLJKSM4")
+//                      .set_key_id("AZ495JLZUJ")
+//                      .set_type("JWS")
+//                      .set_id("com.baidu.baiduhitest")
+//                      .set_issued_at(std::chrono::system_clock::now())
+//                      .set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{36000})
+//                     //  .set_payload_claim("sample", jwt::claim(std::string{"test"}))
+//                      .sign(jwt::algorithm::es256("", rsa_priv_key, "", ""));
+
+//     std::cout << "token:\n" << token << std::endl;
+```
+
 # 参考链接
 https://www.cnblogs.com/moodlxs/archive/2012/10/15/2724318.html   
 https://eclipsesource.com/blogs/2016/09/07/tutorial-code-signing-and-verification-with-openssl/   
