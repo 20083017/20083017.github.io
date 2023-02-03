@@ -8,3 +8,5 @@ https://www.cnblogs.com/jabnih/p/4814212.html
  ./redis-cli -h ip -p port  keys "GO*" | xargs redis-cli  -h ip -p port   del
  
  
+批量执行redis命令
+cat ./batchcmd.txt | redis-cli -h [$Host] -a [$Password]
