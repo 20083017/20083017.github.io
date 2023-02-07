@@ -209,6 +209,38 @@ jwt::create()：生成一个token；同时你可以设置token的过期时间，
 //     std::cout << "token:\n" << token << std::endl;
 ```
 
+
+
+# certificated-based
+注意: 证书格式问题 pem 或者 crt
+
+```
+[Downloads] cat certificate_test.sh                                                                                                                17:49:21
+#!/usr/bin/env zsh
+
+set -e
+
+TOKEN_KEY_FILE_NAME="/Users/liuquan04/Downloads/AuthKey_AZ495JLZUJ.p8"
+TOPIC=com.baidu.baiduhitest
+DEVICE_TOKEN=1acdf217fc68201c685e71cc6be401f396d877a87209c7bfc5f5e4106a7f10ad
+APNS_HOST_NAME=api.push.apple.com
+
+CERTIFICATE_FILE_NAME="/Users/liuquan04/Downloads/output/cert/duneng/text_appstore_cert.pem"
+CERTIFICATE_KEY_FILE_NAME="/Users/liuquan04/Downloads/output/cert/duneng/text_appstore_key.pem"
+
+# openssl s_client -connect "${APNS_HOST_NAME}":443
+
+
+/usr/bin/curl -v \
+              --header "apns-topic: $TOPIC" \
+              --header "apns-push-type: alert" \
+              --cert "${CERTIFICATE_FILE_NAME}" --cert-type PEM \
+              --key "${CERTIFICATE_KEY_FILE_NAME}" --key-type PEM \
+              --data '{"aps":{"alert":"test hello"}}' \
+              --http2 https://${APNS_HOST_NAME}/3/device/${DEVICE_TOKEN}
+```
+
+
 # 参考链接
 https://www.cnblogs.com/moodlxs/archive/2012/10/15/2724318.html   
 https://eclipsesource.com/blogs/2016/09/07/tutorial-code-signing-and-verification-with-openssl/   
