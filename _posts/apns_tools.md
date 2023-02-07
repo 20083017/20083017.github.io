@@ -212,7 +212,7 @@ jwt::create()：生成一个token；同时你可以设置token的过期时间，
 
 
 # certificated-based
-注意: 证书格式问题 pem 或者 crt
+注意: 证书格式问题 pem 或者 cer
 
 ```
 [Downloads] cat certificate_test.sh                                                                                                                17:49:21
