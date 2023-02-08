@@ -10,3 +10,9 @@ https://www.cnblogs.com/jabnih/p/4814212.html
  
 批量执行redis命令
 cat ./batchcmd.txt | redis-cli -h [$Host] -a [$Password]
+
+
+大key删除
+
+不要直接 delete，单进程
+要使用 unlink 命令！！！
