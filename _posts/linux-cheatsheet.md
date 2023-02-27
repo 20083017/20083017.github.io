@@ -18,6 +18,15 @@ tags:
 
 # 常用操作
 
+#### proc
+/proc/N/fd
+/proc/net/tcp
+
+以上2个，配合使用可以定位 socket fd的连接。
+
+/proc/locks
+/proc/cmdline
+
 #### awk-1
   cat 2.log | awk -F" " '{print $1" " $2" " $3" " $4}'  | sort -t' ' -k4 -rn
 #### awk-2 统计log行数
