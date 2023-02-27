@@ -18,6 +18,10 @@ tags:
 
 # 常用操作
 
+#### strace
+
+#### pstack gstack
+
 #### proc
 /proc/N/fd
 /proc/net/tcp
