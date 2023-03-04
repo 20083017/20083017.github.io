@@ -86,5 +86,10 @@ scp -v -r yun_conf {user}@{host}:{path}
 通过gdb看了几个coredump文件，发现堆栈和函数调用基本一致。可以明确的看到，大量的耗时发生在了AddActInfoV3这一函数中：
 ![image](https://user-images.githubusercontent.com/8308226/188916763-a1e6961a-3e46-407e-97db-465637353bbe.png)
 
+#### vmtouch
+查看linux文件的pagecache情况-vmtouch   
+
+vmtouch - the Virtual Memory Toucher 就是用来查看linux文件缓存（page cache）使用情况，命中率   
+现网是真正提升能力的地方,因为机器高负载之后,会出现各种各样的问题,包括很很多"假象". 而机器高负载的原因很多,比如内存. 之前遇到的问题就是, pagecache使用过多,导致内存不足,然后接着cpu飙升,> 严重影响业务质量.这就是为什么要搞个vmtouch的原因. 我要查看哪些文件大量使用page cache， 然后好直接 echo 3 > /proc/sys/vm/drop_caches ,暴力清除缓存   
 
 
