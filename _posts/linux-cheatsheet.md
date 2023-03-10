@@ -74,7 +74,7 @@ grep -E "[^^][0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"
 grep -oE "[^^][0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"   3.log   --col  
 
 #### xargs 执行shell
-	cat 2.txt | xargs -I {} sh -c {}  
+	cat 2.txt | xargs -I {} sh -c {}  或者 -i 如果-I报错的话。
 #### scp	
 scp output/bin/test {user}@{host}:{path}  
 scp -v -r yun_conf {user}@{host}:{path}  
