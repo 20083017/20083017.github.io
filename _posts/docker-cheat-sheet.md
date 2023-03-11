@@ -117,8 +117,12 @@ ln -s /opt/compiler/gcc-12/lib64/ld-linux-x86-64.so.2 /opt/compiler/gcc-8.2/lib6
 
 
 
-
-
+###  docker 命令
+docker exec -it -u root  run -t -i  bca1732dcdeb   /bin/bash
+docker push  xxxxx/xxx_projects/gray/r_centos7u9:gcc12_7_new
+tag   9b9b96af4f11   centos7u9:gcc12_7_new
+build -f Dockerfile
+docker pull   _containers/centos7.9:gcc12
 
 
 docker 命令
@@ -132,4 +136,89 @@ docker run -u root -t -i  bca1732dcdeb   /bin/bash
 
 
 
+### 修改时区，time
+```
+FROM image.weiyun.baidu.com/baidu_projects/hiserver-gray/msg-server_centos7u9:gcc12_7_new
+MAINTAINER liuquan04 <liuquan04@baidu.com>
+
+USER root
+
+#RUN ln -sf /bin/bash /bin/sh
+#RUN groupadd -r work && useradd -m -r -g work work && chmod 777 home/work
+#RUN echo 'work:work' | chpasswd
+
+USER root
+#RUN mkdir /home/work/project
+#RUN mkdir /home/work/logs
+
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' > /etc/timezone
+
+USER work
+CMD /start.sh
+~
+```
+
+
+### gcc12
+```
+FROM image-beta.weiyun.baidu.com/baidu_projects/infoflow-dev1/new-adapter-dev:20220811195616_2d93ebc7
+User root
+RUN mkdir -p /home/opt/compiler/gcc-12
+COPY ./gcc-12 /home/opt/compiler/gcc-12
+RUN ln -s /home/opt/compiler/gcc-12 /opt/compiler/gcc-12
+RUN rm /usr/bin/gcc
+RUN ln -s /opt/compiler/gcc-12/bin/gcc /usr/bin/gcc
+USER work
+```
+
+
+### dockerfile
+```
+ROM image-beta.weiyun.baidu.com/baidu_projects/infoflow-dev2/centos7u9:gcc12_3_new
+MAINTAINER liuquan04 <liuquan04@baidu.com>
+
+USER root
+
+#RUN ln -sf /bin/bash /bin/sh
+#RUN groupadd -r work && useradd -m -r -g work work && chmod 777 home/work
+#RUN echo 'work:work' | chpasswd
+
+USER root
+#RUN mkdir /home/work/project
+#RUN mkdir /home/work/logs
+
+COPY start.sh  /start.sh
+RUN chown -R work:work /home/work
+RUN chown work:work /start.sh
+RUN chmod 777 /start.sh
+USER work
+CMD /start.sh
+```
+
+### ld-linux-x86-64.so.2: bad ELF interpreter
+```
+FROM image.weiyun.baidu.com/baidu_projects/hiserver-gray/msg-server_centos7u9:gcc12_5_new
+MAINTAINER liuquan04 <liuquan04@baidu.com>
+
+USER root
+
+#RUN ln -sf /bin/bash /bin/sh
+#RUN groupadd -r work && useradd -m -r -g work work && chmod 777 home/work
+#RUN echo 'work:work' | chpasswd
+
+USER root
+#RUN mkdir /home/work/project
+#RUN mkdir /home/work/logs
+
+COPY output.tar.gz  /output.tar.gz
+RUN chown -R work:work /home/work
+RUN chown work:work /output.tar.gz
+RUN chmod 777 /output.tar.gz
+
+RUN mkdir -p /opt/compiler/gcc-8.2/lib64/
+RUN ln -s /opt/compiler/gcc-12/lib64/ld-linux-x86-64.so.2 /opt/compiler/gcc-8.2/lib64/ld-linux-x86-64.so.2
+
+USER work
+CMD /start.sh
+```
 
