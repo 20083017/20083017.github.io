@@ -108,6 +108,12 @@ $ nohup /usr/bin/dockerd --bip=10.0.4.1/24 -H tcp://127.0.0.1:2375 -H unix:///va
 
 
 
+### ld-linux-x86-64.so.2: bad ELF interpreter
+4.12 ld-linux-x86-64.so.2: bad ELF interpreter: No such file or directory
+/opt/compiler/gcc-8.2/lib64/ld-linux-x86-64.so.2: bad ELF interpreter: No such file or directory
+镜像中增加
+ln -s /opt/compiler/gcc-12/lib64/ld-linux-x86-64.so.2 /opt/compiler/gcc-8.2/lib64/ld-linux-x86-64.so.2
+修复。
 
 
 
