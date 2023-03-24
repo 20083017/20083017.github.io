@@ -42,5 +42,22 @@ set logging file mylog.txt
 set logging on
 最后,输出所有线程堆栈到指定文件
 
-thread apply all bt
+thread apply all bt   // 最准确
 ```
+
+# 程序hang住
+
+
+strace的最后依据。
+
+pstack + strace 
+cat /proc/pid/stack
+cat /proc/pid/wchan   // hang 住的信号
+
+# 进程、线程状态
+
+
+
+# strace 详解
+https://www.cnblogs.com/machangwei-8/p/10388883.html
+
