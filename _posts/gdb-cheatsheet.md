@@ -29,3 +29,18 @@ src_code_dir 有2种情况 绝对路径 相对路径
 查看二进制文件路径 
 readelf -p .debug_str exe_or_so_file  查看源文件是否为相对路径
 b filename:linenum   设置断点 
+
+
+# 查看线程堆栈
+```
+首先，将gdb attach到调试线程
+
+gdb -p pro_pid
+然后，在GDB中设置调试文件路径，并开启日志选项
+
+set logging file mylog.txt
+set logging on
+最后,输出所有线程堆栈到指定文件
+
+thread apply all bt
+```
