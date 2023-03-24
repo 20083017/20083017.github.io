@@ -19,7 +19,9 @@ tags:
 # 常用操作
 
 #### strace
-
+	/usr/bin/strace  -o output2.txt -T -tt -e trace=all ./chat
+	/usr/bin/strace -tt -T -v -f -e trace=file -o strace1.log -s 1024 ./chat
+	/usr/bin/strace -tt -T -v -f -e trace=file -o strace1.log -s 1024 -p pid
 #### pstack gstack
 
 #### proc
