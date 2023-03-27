@@ -69,6 +69,7 @@ top 重要:各个参数的含义, 系统cpu使用率, 业务CPU使用率,swap等
 
 #### 查看进程线程数量
 	ps -T -p ${pid} 
+	ps -T -H ${pid}   
 
 #### ip 正则  
 ip grep   
