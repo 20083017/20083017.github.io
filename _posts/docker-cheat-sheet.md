@@ -222,3 +222,14 @@ USER work
 CMD /start.sh
 ```
 
+
+## 一键打包命令
+docker build --no-cache -t image.weiyun.baidu.com/baidu_projects/hiserver-gray/msg-server_centos7u9:gcc12_10_new -f  Dockerfile_libcurl .
+
+## 安装libcurl Dockerfile
+```
+RUN yum install libcurl3-openssl-dev
+```
+
+
+
