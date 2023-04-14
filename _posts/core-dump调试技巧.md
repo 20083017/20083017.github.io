@@ -18,5 +18,9 @@
 https://www.qdcto.com/archives/1002#_%E6%9F%A5%E7%9C%8B%E8%A2%AB%E4%BC%98%E5%8C%96%E5%90%8E%E7%9A%84%E5%8F%98%E9%87%8F%E5%80%BC
 
 
-       
+# 方法6：
+对core函数反汇编：disas proc_conn_timeout_limited或加/m同时显示源码
+
+# 方法7:
+ i register
        
