@@ -15,6 +15,7 @@ tags:
 
 # Socket参数整理
 一、Accept Queue检查
+
 * accept queue is full，且tcp_abort_on_overflow=1
 1. cat /proc/sys/net/ipv4/tcp_abort_on_overflow
 * accept queue默认长度只有50（通过backlog设置）
@@ -24,6 +25,21 @@ tags:
 * accept queue溢出，通过观察这个统计值发现出现这种情况时该统计值会增加
 1. netstat -s|grep overflowed
 2. 13924575 times the listen queue ofasocket overflowedthe listen queue ofasocket overflowedthe listen queue ofasocket overflowed
+
+3. 半连接队列大小查看
+   
+5. accept 队列大小查看
+![image](https://user-images.githubusercontent.com/8308226/232445187-5e8e91ae-218b-4966-9600-0537f3e339bb.png)
+在「LISTEN 状态」时，Recv-Q/Send-Q 表示的含义如下：
+
+Recv-Q：当前全连接队列的大小，也就是当前已完成三次握手并等待服务端 accept() 的 TCP 连接；
+Send-Q：当前全连接最大队列长度，上面的输出结果说明监听 8088 端口的 TCP 服务，最大全连接长度为 128；
+
+在「非 LISTEN 状态」时，Recv-Q/Send-Q 表示的含义如下：
+![image](https://user-images.githubusercontent.com/8308226/232445464-97e85e91-c285-488a-910e-02fbaeb1627a.png)
+Recv-Q：已收到但未被应用进程读取的字节数；
+Send-Q：已发送但未收到确认的字节数；
+
 二、sysctl内核参数检查
 * linux内核参数优化
      net.ipv4.tcp_syncookies = 1
