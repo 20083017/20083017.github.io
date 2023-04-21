@@ -114,6 +114,21 @@ nm bin文件
 ldd bin文件
 
 
-
+### ssh + rsync 互传文件，rsync断点续传
+```
+ Start port forwarding backend
+ssh -f -N -L 1234:HostC:22 user@HostB
+# You can
+# 1. Either, login HostC from port 1234 on localhost
+ssh -p 1234 user@localhost
+# 2. OR, scp directly
+scp -p 1234 src_dir/ user@localhost:target_dir/
+```
+```
+# upload
+rsync -P --rsh='ssh -p 1234' /data/myfile user@localhost:/data/
+# download
+rsync -P --rsh='ssh -p 1234' user@localhost:/data/myfile /data/
+```
 
 
