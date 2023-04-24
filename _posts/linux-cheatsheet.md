@@ -33,6 +33,10 @@ tags:
 /proc/locks
 /proc/cmdline
 
+## 清理线上大文件，先设置低优先级，再删除
+考虑到对线上服务 IO 造成的影响，应该将大文件 mv 走之后，设置操作为低优先级再执行
+mv ... && cd .. && nice -n 6 "${command}"
+
 #### awk-1
   cat 2.log | awk -F" " '{print $1" " $2" " $3" " $4}'  | sort -t' ' -k4 -rn
 #### awk-2 统计log行数
