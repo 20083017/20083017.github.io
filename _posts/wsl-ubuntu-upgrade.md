@@ -22,3 +22,60 @@ apt-get update failed because certificate verification failed because handshake 
 ```
 sudo apt install ca-certificates
 ```
+
+
+报错
+```
+This question already has answers here:
+Can't upgrade to Ubuntu 21.04 : "Restoring original system state. Aborting" (3 answers)
+Closed 1 year ago.
+It's high time I upgrade Ubuntu from 18.04 to 20.04! But I don't get very far before the process aborts without an error message. Is there a log file I can check for further information?
+
+$ uname -a
+Linux tribble 5.4.72-microsoft-standard-WSL2 #1 SMP Wed Oct 28 23:40:43 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID: Ubuntu
+Description:    Ubuntu 18.04.5 LTS
+Release:        18.04
+Codename:       bionic
+
+$ sudo do-release-upgrade
+Checking for a new Ubuntu release
+Get:1 Upgrade tool signature [1554 B]
+Get:2 Upgrade tool [1340 kB]
+Fetched 1342 kB in 0s (0 B/s)
+authenticate 'focal.tar.gz' against 'focal.tar.gz.gpg'
+extracting 'focal.tar.gz'
+In the created screen:
+
+Reading cache
+
+Checking package manager
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+Hit http://security.ubuntu.com/ubuntu bionic-security InRelease
+Hit http://archive.ubuntu.com/ubuntu bionic InRelease
+Hit http://ppa.launchpad.net/maxmind/ppa/ubuntu bionic InRelease
+Hit http://archive.ubuntu.com/ubuntu bionic-updates InRelease
+Hit http://archive.ubuntu.com/ubuntu bionic-backports InRelease
+Hit https://packagecloud.io/cs50/repo/ubuntu bionic InRelease
+Fetched 0 B in 0s (0 B/s)
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+[LONG PAUSE]
+
+Restoring original system state
+
+Aborting
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+=== Command terminated with exit status 1 (Thu Aug  5 02:10:50 2021) ===
+```
+
+## sudo apt-get purge snapd
+https://askubuntu.com/questions/1356056/do-release-upgrade-silently-fails-upgrading-from-18-04-lts-to-20-04-lts-in-wsl
