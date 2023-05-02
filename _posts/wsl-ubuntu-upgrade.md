@@ -17,14 +17,14 @@ sudo apt install --reinstall ubuntu-keyring
 ```
 
 
-##
+## upgrade 失败
 apt-get update failed because certificate verification failed because handshake failed on nodesource
 ```
 sudo apt install ca-certificates
 ```
 
 
-报错
+# 报错 升级失败
 ```
 This question already has answers here:
 Can't upgrade to Ubuntu 21.04 : "Restoring original system state. Aborting" (3 answers)
