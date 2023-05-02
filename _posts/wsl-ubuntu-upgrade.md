@@ -15,3 +15,10 @@ Authenticating the upgrade failed. There may be a problem with the network or wi
 ```
 sudo apt install --reinstall ubuntu-keyring
 ```
+
+
+##
+apt-get update failed because certificate verification failed because handshake failed on nodesource
+```
+sudo apt install ca-certificates
+```
