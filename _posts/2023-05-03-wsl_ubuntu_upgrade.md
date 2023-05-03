@@ -1,4 +1,22 @@
 
+---
+layout:     post
+title:      wsl_ubuntu_upgrade 指南
+subtitle:   wsl ubuntu升级小记
+date:       2023-05-03
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - windows10
+    - ubuntu
+    - wsl
+---
+
+>整理wsl升级ubuntu内核遇到的问题
+
+# wsl_ubuntu_upgrade 指南
+
 ## Authentication failed
 在 Ubuntu 上执行升级命令时提示以下报错   
 ```
