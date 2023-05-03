@@ -18,6 +18,13 @@ tags:
 
 # 常用操作
 
+#### dmesg
+```
+unix_time=echo "$(date +%s) - $(cat /proc/uptime | cut -f 1 -d' ') + 12106473.374733" | bc
+
+输出结果 s 转换为 unix时间
+```
+
 #### strace
 	/usr/bin/strace  -o output2.txt -T -tt -e trace=all ./chat
 	/usr/bin/strace -tt -T -v -f -e trace=file -o strace1.log -s 1024 ./chat
