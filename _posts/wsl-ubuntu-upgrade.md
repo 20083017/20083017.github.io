@@ -79,3 +79,29 @@ Reading state information... Done
 
 ## sudo apt-get purge snapd
 https://askubuntu.com/questions/1356056/do-release-upgrade-silently-fails-upgrading-from-18-04-lts-to-20-04-lts-in-wsl
+
+## 更新(K)Ubuntu 18.04至20.04后出现OpenMPI-bin错误
+```
+update-alternatives: error: /var/lib/dpkg/alternatives/mpi corrupt: slave link same as main link /usr/bin/mpicc
+```
+解决方式
+首先删除openmpi的更新替代项：
+```
+sudo rm -f /etc/aternatives/mpi* /var/lib/dpkg/alternatives/mpi*
+```
+重新安装openmpi
+```
+sudo apt install open-mpi
+```
+
+## Failed to retrieve available kernel versions
+Ubuntu 22.04 LTS on WSL: "Failed to retrieve available kernel versions"/"Failed to check for processor microcode upgrades" when installing packages
+
+```
+sudo vim /etc/needrestart/needrestart.conf
+
+uncomment && change the setting
+
+$nrconf{kernelhints} = 0;
+$nrconf{ucodehints} = 0;
+```
