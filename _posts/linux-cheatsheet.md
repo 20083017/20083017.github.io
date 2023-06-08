@@ -230,6 +230,11 @@ pdistat -w 5
 ```
 
 
+### 
+```
+ls -l 4472_gid | awk -F' ' '{print $9}' | xargs -i sh -c  'cat 4472_gid/{}' |  xargs -i sh -c  'echo -n  {} " "; echo  "get ig_{}" | ../redis-cli -h ip -p 9000;'  | grep 4472 >> new_t.txt &
+```
+
 
 
 
