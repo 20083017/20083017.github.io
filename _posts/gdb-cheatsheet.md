@@ -13,7 +13,7 @@ tags:
 >随便整理的一些自用的Gdb指令
 
 
-# Gdb 内存越界、内存重叠、重复释放、
+# Gdb 内存越界、内存重叠、重复释放、double allocate
 
   GDB watch std::string size
 print ((size_t*)quit_command._M_dataplus)[-3]  
@@ -56,6 +56,13 @@ cat /proc/pid/wchan   // hang 住的信号
 
 # 进程、线程状态
 
+info threads
+thread id (info threads 前面的id)
+
+# 查看全局和静态变量
+info variables（尽量不要用，可能会有很多）
+info locals(stack frame 局部变量)
+info args(查看当前stack frame参数)
 
 
 # strace 详解
