@@ -15,6 +15,8 @@ tags:
 
 # Gdb 内存越界、内存重叠、重复释放、double allocate
 
+double allocate（智能指针--make_shared使用。）
+
   GDB watch std::string size
 print ((size_t*)quit_command._M_dataplus)[-3]  
 
