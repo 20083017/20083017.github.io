@@ -5,6 +5,11 @@
 mysql -h   -P  -ub  -p'' -e "use bdim_roam; select id from _tablet_789" > 1.txt
 ```
 
+### inner join
+```
+select * from im_msgroaming inner join im_user1 on im_msgroaming.uid1=im_user1.uid1 inner join im_user2 on im_msgroaming.uid2=im_user2.uid2;
+```
+
 # mysql 大表批量删除千万级数据
 假设表的引擎是 Innodb， MySQL 5.7+   
 
