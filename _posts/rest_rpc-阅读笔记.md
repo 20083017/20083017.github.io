@@ -56,8 +56,8 @@
 注释: 
 * req_id req_header中的req_id
 * req_type ENUM {req_res,sub_pub}
-* content  失败: result_code::FAIL, "unknown function: " + get_name_by_key(key)
-           成功: result_code::OK, result
+* content  失败: result_code::FAIL, "unknown function: " + get_name_by_key(key)   
+           成功: result_code::OK, result   
 
 ## server.register_handler函数
 
