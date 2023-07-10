@@ -41,8 +41,9 @@ Recv-Q：已收到但未被应用进程读取的字节数；
 Send-Q：已发送但未收到确认的字节数；
 
 6.tcp 连接数 
-
-netstat -ant|awk '/^tcp/ {++S[$NF]} END {for(a in S) print (a,S[a])}'   
+```
+netstat -ant|awk '/^tcp/ {++S[$NF]} END {for(a in S) print (a,S[a])}'
+```
 
 二、sysctl内核参数检查
 * linux内核参数优化
