@@ -40,6 +40,10 @@ Send-Q：当前全连接最大队列长度，上面的输出结果说明监听 8
 Recv-Q：已收到但未被应用进程读取的字节数；
 Send-Q：已发送但未收到确认的字节数；
 
+6.tcp 连接数 
+
+netstat -ant|awk '/^tcp/ {++S[$NF]} END {for(a in S) print (a,S[a])}'   
+
 二、sysctl内核参数检查
 * linux内核参数优化
      net.ipv4.tcp_syncookies = 1
@@ -71,10 +75,6 @@ strace -f -p 4730 -T -tt -o /home/futi/strace_4730.log
 
 strace -f -F -o dcop-strace.txt dcopserver
 这里 -f -F选项告诉strace同时跟踪fork和vfork出来的进程，-o选项把所有strace输出写到dcop-strace.txt里 面，dcopserver是要启动和调试的程序
-
-tcp 连接数 
-
-netstat -ant|awk '/^tcp/ {++S[$NF]} END {for(a in S) print (a,S[a])}'
 
 
 2.检查程序问题
