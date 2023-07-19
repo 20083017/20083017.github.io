@@ -25,10 +25,12 @@ unix_time=echo "$(date +%s) - $(cat /proc/uptime | cut -f 1 -d' ') + 12106473.37
 输出结果 s 转换为 unix时间
 ```
 
-#### strace
+#### strace 系统函数trace
 	/usr/bin/strace  -o output2.txt -T -tt -e trace=all ./chat
 	/usr/bin/strace -tt -T -v -f -e trace=file -o strace1.log -s 1024 ./chat
 	/usr/bin/strace -tt -T -v -f -e trace=file -o strace1.log -s 1024 -p pid
+#### ltrace 库函数trace
+ 
 #### pstack gstack
 
 #### proc
