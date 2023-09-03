@@ -79,5 +79,12 @@ pip install numpy==
 #### 分区,扩容
 https://blog.csdn.net/Xin_101/article/details/125929428
 
+#### 关闭锁屏
+
+#### windows 设置输入法，关闭系统自带的微软输入法，更换为 搜狗
+设置-时间和语言-键盘 -添加语言删除
+
+#### windows 设置 程序的开机启动功能(类似mac)
+
 
 
