@@ -76,7 +76,7 @@ pip install numpy==
 
 #### python openssl 源码编译？ python3-openssl？
 
-#### 分区
+#### 分区,扩容
 https://blog.csdn.net/Xin_101/article/details/125929428
 
 
