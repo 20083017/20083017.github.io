@@ -58,3 +58,10 @@ int main(int argc, const char *argv[]) {
 return 0;
 }
 ```
+
+
+#### R
+```
+std::string policy_json = R"((Your JSON policy here))";
+
+```
