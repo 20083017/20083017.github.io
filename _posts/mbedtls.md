@@ -41,3 +41,17 @@
     //                     "TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384"
     //                 );
 ```
+
+
+
+### 坑
+
+android ndk版本 ，ndk23.版本   ndk25版本存在问题，ndk26版本存在问题？具体啥问题忘记了。。。
+疑似这个问题，换低版本好使了，高版本为啥不好使，还是不知道。。
+![image](https://github.com/20083017/20083017.github.io/assets/8308226/59fe9871-a8e3-4fc4-b58e-4983a351c30b)
+
+区别  clang版本不同，lto支持不同，低版本可能不支持lto，
+android lto 坑，cxx link 需要同时增加lto  报错信息 file format not recognized
+
+
+
