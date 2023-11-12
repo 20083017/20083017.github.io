@@ -4,6 +4,12 @@
 
 ```
 
+### 分配大量虚存或者实存
+```
+        //  大量分配虚拟内存，每次调用分配20Gvoid virtualMemoryTest(){    int sizeVm = 1 * 1024 * 1024 * 1024;    //  1GB    for(int i = 0; i < 20; i++){    //  1GB * 20        void* block = mmap(NULL, sizeVm, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);        memset(block, 1, 1);        list[index++] = block;    }}
+//  大量分配物理内存，每次调用申请160Mvoid physicalMemoryTest(){    int size = 8 * 1024 * 1024;     //  8M    for (int i = 0; i < 20; i++) {  //  8M * 20        void *block = malloc(size);        memset(block, 1, size);        list[index++] = block;    }}
+```
+
 
 leveldb 
 
