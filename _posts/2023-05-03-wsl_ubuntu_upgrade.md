@@ -134,3 +134,8 @@ localhostForwarding=true
 
 ```
 
+### 设置wsl 默认的编辑器
+```
+sudo update-alternatives --config editor
+选择vim 或者 其他编辑器即可
+```
