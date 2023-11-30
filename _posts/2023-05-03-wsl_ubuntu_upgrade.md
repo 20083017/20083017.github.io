@@ -122,3 +122,15 @@ uncomment && change the setting
 $nrconf{kernelhints} = 0;
 $nrconf{ucodehints} = 0;
 ```
+
+
+### 修改wsl 可用内存
+
+```
+[wsl2]
+memory=2GB
+swap=4GB
+localhostForwarding=true
+
+```
+
