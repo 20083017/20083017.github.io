@@ -34,11 +34,11 @@ https://coolshell.cn/articles/11466.html
 
 
 #### std::thread 构造函数崩溃
-可能得原因：
-so 库不一致？
-重复赋值？或者 move before join？
-seems like 在赋值之前添加 join 可以解决，如果在自己的线程中join 自己，也会出异常！！！
-
-https://stackoverflow.com/questions/52369320/creating-new-thread-causing-exception
+可能得原因：    
+so 库不一致？   
+重复赋值？或者 move before join？   
+seems like 在赋值之前添加 join 可以解决，如果在自己的线程中join 自己，也会出异常！！！   
+   
+https://stackoverflow.com/questions/52369320/creating-new-thread-causing-exception   
 
 
