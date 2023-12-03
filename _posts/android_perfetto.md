@@ -4,6 +4,7 @@
 ```
 可行 android 13，rom为user root版本。
 android 14 暂不支持
+android 14, 好像 在开发者选项内打开 系统跟踪开关，才能正常捕获~   
 1.允许 perfetto，允许hook
 adb shell setprop persist.traced.enable 1
 adb shell setprop libc.debug.hooks.enable 1
