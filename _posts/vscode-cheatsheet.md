@@ -1,5 +1,11 @@
+vscode 配置
 
 
+
+https://blog.csdn.net/witton/article/details/130944663
+
+
+### 插件安装
 
 ![C9iOkmPCZB](https://github.com/20083017/20083017.github.io/assets/8308226/29e7540d-f683-47bc-bbd8-8a87d75371d2)
 
