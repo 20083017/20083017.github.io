@@ -16,6 +16,14 @@ tags:
 
 # wsl_ubuntu_upgrade 指南
 
+## 打开关闭虚拟化
+```
+打开 
+bcdedit /set hypervisorlaunchtype auto
+关闭
+bcdedit /set hypervisorlaunchtype off
+```
+
 ## Authentication failed
 在 Ubuntu 上执行升级命令时提示以下报错   
 ```
