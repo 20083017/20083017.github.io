@@ -41,4 +41,14 @@ seems like 在赋值之前添加 join 可以解决，如果在自己的线程中
    
 https://stackoverflow.com/questions/52369320/creating-new-thread-causing-exception   
 
+### undefined reference
+
+1、nm
+c++filt demangle
+2、 循环引用？！
+include
+3、
+
+
+
 
