@@ -147,3 +147,9 @@ localhostForwarding=true
 sudo update-alternatives --config editor
 选择vim 或者 其他编辑器即可
 ```
+
+### 关闭dash
+```
+选择no，即可
+sudo dpkg-reconfigure dash
+```
