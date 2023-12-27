@@ -23,3 +23,17 @@ ccache --help
 ### ccache + distcc
 distcc 分布式编译工具
 
+
+### 导出符号表
+```
+https://tech.meituan.com/2022/06/02/meituans-technical-exploration-and-practice-of-android-so-volume-optimization.html
+
+--version-script 全局链接选项
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script=${CMAKE_SOURCE_DIR}/version.map")
+
+对某个目标生效
+add_library(mylib SHARED mylib.c)
+set_target_properties(mylib PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/version.map")
+
+
+```
