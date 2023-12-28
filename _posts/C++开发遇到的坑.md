@@ -50,5 +50,15 @@ include
 3、
 
 
+### placement new 释放操作
+```
+char *x = (char*)malloc(10 * sizeof(char*));
+new (x) LogData();
+// ... use x ...
+x->~LogData(); // Explicitly call the destructor
+free(x); // Deallocate the memory
+
+```
+
 
 
