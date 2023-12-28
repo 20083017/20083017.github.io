@@ -71,3 +71,28 @@ info args(查看当前stack frame参数)
 # strace 详解
 https://www.cnblogs.com/machangwei-8/p/10388883.html
 
+#  gdb 调试sdk so
+测试可用
+```
+在使用GDB调试动态库（.so文件）时，如果无法加载源代码，可能是由于以下原因123：
+
+源代码的位置：GDB需要知道源代码的位置才能加载它。你可以使用dir命令将源代码的目录添加到GDB的搜索路径中1。
+
+动态库的符号：为了在GDB中找到变量和函数名，你需要使用sharedlibrary命令将动态库的符号读入GDB1。
+
+动态库的加载：你可能需要在GDB中使用load命令将动态库加载到内存中1。
+
+编译选项：确保在编译动态库时启用了调试信息。这通常通过在编译命令中添加-g选项来实现4。
+
+以下是一个使用GDB调试动态库的基本步骤1：
+
+(gdb) file <你的exe>
+(gdb) load <你的so> # 这条命令是可选的
+(gdb) dir <so的源码目录>
+(gdb) sharedlibrary <你的so>
+(gdb) breakpoint <你的so中的某个位置>
+(gdb) run
+
+
+```
+
