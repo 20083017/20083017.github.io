@@ -59,5 +59,9 @@ android lto 坑，cxx link 需要同时增加lto  报错信息 file format not r
 ![image](https://github.com/20083017/20083017.github.io/assets/8308226/f753f8f2-27e7-4140-a3f9-0c24991baa4b)
 
 
+### 坑
+裁剪后，同步修改mbedtls_config.h
+
+### 
 
 
