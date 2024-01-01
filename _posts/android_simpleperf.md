@@ -1,5 +1,8 @@
 simpleperf 使用
 
+user_debug rom profiler 不好使，
+user_build rom profiler 好使，profiler build for user_build
+
 ### 采集数据
 
 build.gradle 增加
@@ -30,7 +33,11 @@ perl version 5
 
 perl stackcollapse-perf.pl perf_script_output_file.txt | perl flamegraph.pl > a.html
 
+###  进程 能抓数据
+simpleperf record -g -p 20510 --duration 30 -f 12500 --call-graph fp -o perf.data
 
+
+### 线程
 ```
 1.安装perl:网址：https://www.perl.org/get.html，下载速度可能有点慢，因为是外网，不要着急。
 2.安装两个包：FlameGraph-master.zip、simpleperf-master.tar.gz，FlameGraph可以在网址https://github.com/brendangregg/FlameGraph上下载。
