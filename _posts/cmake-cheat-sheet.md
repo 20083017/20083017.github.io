@@ -37,3 +37,11 @@ set_target_properties(mylib PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_
 
 
 ```
+
+### graphviz
+ cmake 
+ --graphviz=foo.dot  ## 添加配置项
+
+ foo.dot 转换为png
+ dot -Tpng foo.dot -o foo.png
+
