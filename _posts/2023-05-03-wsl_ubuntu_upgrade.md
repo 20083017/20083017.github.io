@@ -153,3 +153,8 @@ sudo update-alternatives --config editor
 选择no，即可
 sudo dpkg-reconfigure dash
 ```
+
+### 橋接模式
+ 注意：windows 必須是11以上   
+![image](https://github.com/20083017/20083017.github.io/assets/8308226/b02f3382-2ca0-4990-bc31-b880cebc9d39)
+
