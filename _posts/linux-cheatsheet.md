@@ -12,6 +12,36 @@ tags:
 
 >随便整理的一些自用的Linux指令
 
+# 查看系统芯片方案
+cat /proc/cpuinfo
+dmesg 日志   
+
+openwrt 编译时需要选择系统类型用   
+
+```
+root@IceCreamBox:~# cat /proc/cpuinfo 
+system type             : Ralink MT7620A ver:2 eco:3
+machine                 : IceCreamBox
+processor               : 0
+cpu model               : MIPS 24KEc V5.0
+BogoMIPS                : 385.84
+wait instruction        : yes
+microsecond timers      : yes
+tlb_entries             : 32
+extra interrupt vector  : yes
+hardware watchpoint     : yes, count: 4, address/irw mask: [0x0ffc, 0x0ffc, 0x0ffb, 0x0ffb]
+isa                     : mips1 mips2 mips32r1 mips32r2
+ASEs implemented        : mips16 dsp
+shadow register sets    : 1
+kscratch registers      : 0
+core                    : 0
+VCED exceptions         : not available
+VCEI exceptions         : not available
+
+
+```
+
+
 # 二进制显示文件 linux
   
   od -tx1 -tc -Ax binFile
