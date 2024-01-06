@@ -17,6 +17,7 @@ cat /proc/cpuinfo
 dmesg 日志   
 
 openwrt 编译时需要选择系统类型用   
+能看到 系统类型 是MT7620A，上面的machine参数给的是自己的固件命名。   
 
 ```
 root@IceCreamBox:~# cat /proc/cpuinfo 
