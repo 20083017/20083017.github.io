@@ -1,3 +1,8 @@
 ### vld使用攻略
 
 https://juejin.cn/post/7145406552302682148
+
+### mk 軟連接
+
+文件夾   
+mklink /j dest source   
