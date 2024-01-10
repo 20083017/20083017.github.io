@@ -158,3 +158,43 @@ sudo dpkg-reconfigure dash
  注意：windows 必須是11以上   
 ![image](https://github.com/20083017/20083017.github.io/assets/8308226/b02f3382-2ca0-4990-bc31-b880cebc9d39)
 
+
+windows  powershell脚本   
+```
+# 检查并以管理员身份运行PS并带上参数
+$currentWi = [Security.Principal.WindowsIdentity]::GetCurrent()
+$currentWp = [Security.Principal.WindowsPrincipal]$currentWi
+if( -not $currentWp.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+{
+    $boundPara = ($MyInvocation.BoundParameters.Keys | foreach{'-{0} {1}' -f  $_ ,$MyInvocation.BoundParameters[$_]} ) -join ' '
+    $currentFile = $MyInvocation.MyCommand.Definition
+    $fullPara = $boundPara + ' ' + $args -join ' '
+    Start-Process "$psHome\pwsh.exe"   -ArgumentList "$currentFile $fullPara"   -verb runas
+    return
+}
+#首先随意执行一条wsl指令，确保wsl启动，这样后续步骤才会出现WSL网络
+echo "正在检测wsl运行状态..."
+wsl --cd ~ -e ls
+echo "正在获取网卡信息..."
+Get-NetAdapter
+echo "`n正在将WSL网络桥接到以太网..."
+Set-VMSwitch WSL -NetAdapterName wsl
+echo "`n正在修改WSL网络配置..."
+wsl --cd ~ -e sh -c ./set_eth0.sh
+echo "`ndone"
+pause
+
+```
+
+c/users/username/.wslconfig   
+```
+[wsl2]
+networkingMode=bridged
+vmSwitch=wsl
+```
+wsl ip静态配置(未用到)   
+```
+# sudo ip addr del $(ip addr show eth0 | grep 'inet\b' | awk '{print $2}' | head -n 1) dev eth0
+# sudo ip addr add 192.168.31.164/24 broadcast 192.168.31.255 dev eth0
+# sudo ip route add 0.0.0.0/0 via 192.168.31.1 dev eth0
+```
