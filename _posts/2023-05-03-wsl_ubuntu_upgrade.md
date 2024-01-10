@@ -41,6 +41,8 @@ Authenticating the upgrade failed. There may be a problem with the network or wi
 sudo apt install --reinstall ubuntu-keyring
 ```
 
+配置网关  /etc/resolv.conf   
+
 
 ## upgrade 失败
 apt-get update failed because certificate verification failed because handshake failed on nodesource
