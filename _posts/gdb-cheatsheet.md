@@ -96,3 +96,49 @@ https://www.cnblogs.com/machangwei-8/p/10388883.html
 
 ```
 
+### gdb init
+
+```
+echo \nReading ~/.gdbinit...\n\n
+set print asm-demangle on
+set print pretty on
+set print object on
+# set print static-members on # makes printing objects too verbose!
+set print static-members off
+set print vtbl on
+set print demangle on
+set demangle-style gnu-v3
+#set demangle-style none
+
+
+# this helps emacs know where we are
+set annotate 1
+
+set history size 9999999
+set history filename ~/.gdbhistory
+set history save on
+
+define gdbkill
+kill
+end
+
+define gdbquit
+quit
+end
+
+set script-extension soft
+
+# to prevent other threads from being able to run
+# when you are stepping
+#set scheduler-locking on
+
+# disable paging since eshell handles for us
+set height 0
+
+# annoying to remember
+alias -a exit = quit
+
+source ~/etc/gdb/nopify.py
+```
+
+
