@@ -12,6 +12,22 @@ tags:
 
 >随便整理的一些自用的Gdb指令
 
+### 打开core dump文件
+```
+1、问题：当前文件夹无法生成core文件
+
+  修改core 文件生成路径为当前路径。
+
+   方法1如：echo core.%e.%p > /proc/sys/kernel/core_pattern  只是临时修改。
+
+  方法2如：/sbin/sysctl -w kernel.core_pattern=core.%e.%p  永久修改
+
+2、问题：修改core文件大小为unlimited后，显示core文件 is not a core dump:不可识别文件
+
+首先确保修改了 ulimit -c unlimited
+修改后还是无法识别，一种可能原因是当前执行文件的目录是与windows共享目录，所以core文件大小可能还是0（具体为什么不知道，菜鸟~），把可执行文件移到linux根目录下任一目录就可
+```
+
 
 # Gdb 内存越界、内存重叠、重复释放、double allocate
 ```
