@@ -9,3 +9,11 @@
 -fdata-sections：这个选项类似于 -ffunction-sections，但是它针对的是全局和静态变量。它告诉编译器将每个全局或静态变量放入独立的 section 中。
 --gc-sections：这个选项告诉链接器执行 "section garbage collection"。链接器会检查每一个 section，如果它发现某个 section 中没有任何引用的符号（函数或变量），那么这个 section 就会被移除。这可以显著减小最终生成的可执行文件或共享库的大小。
 ```
+
+
+### bloaty  命令 查看文件可裁剪文件
+
+```
+bloaty -d compileunits -n 0 libmicontinuity.so  > 1.txt
+```
+
