@@ -1,3 +1,9 @@
+# 打开core文件
+```
+core 命令
+ulimit -c unlimited
+echo "/root/camera-37x/bin/core-%e-%p-%t" > /proc/sys/kernel/core_pattern
+```
 # 方法1: dmesg + addr2line
 
        1. gcc -o taogeSeg -g taogeSeg.c ：生成带有调试信息的可运行文件taogeSeg
