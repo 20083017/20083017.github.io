@@ -12,6 +12,7 @@ https://www.jianshu.com/p/3a2df9b7c353
 
 ```
  32bit android 13 及以前，需要安装特殊的rom包 [pass]
+  小米手机 无32位？！！！  bug了。。
 ```
 
 ### android hwasan
