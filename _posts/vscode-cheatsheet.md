@@ -10,6 +10,30 @@ https://blog.csdn.net/witton/article/details/130944663
 ![C9iOkmPCZB](https://github.com/20083017/20083017.github.io/assets/8308226/29e7540d-f683-47bc-bbd8-8a87d75371d2)
 
 
+|   | 插件              | frequency | others |
+| :--| :---------------- | :------: | ----: |
+| 2.| Bash Debug        |      |       |
+| 3.| Bazel           |    low  |       |
+| 4.| C/C++ Intel   |  high   |       |
+| 5.| Clang-tidy Linter |  high   |       |
+| 6.| clangd       |      |       |
+| 7.| cmake           |    low  |       |
+| 8.| cmake tools   |  high   |       |
+| 9.| cmake integration |  high   |       |
+| 10.| cmake-format        |      |       |
+| 11.| CodeLLDB           |    low  |       |
+| 12.| git graph   |  high   |       |
+| 13.| gitlens |  high   |       |
+| 14.| shell        |      |       |
+| 15.| makefile Tools |    low  |  compile_commands.json     |
+
+#### makefile Tools
+```
+settings.json 配置
+"makefile.compileCommandsPath":".vscode/compile_commands.json"
+```
+
+
 ### lldb 配置
 ```
 {
