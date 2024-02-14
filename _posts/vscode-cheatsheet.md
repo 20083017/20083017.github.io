@@ -26,6 +26,23 @@ https://blog.csdn.net/witton/article/details/130944663
 | 13.| gitlens |  high   |       |
 | 14.| shell        |      |       |
 | 15.| makefile Tools |    low  |  compile_commands.json     |
+| 16.| include what you use |      |  compile_commands.json     |
+| 17.| clang-format |      |  compile_commands.json     |
+| 18.| todo-tree |      |       |
+| 19.| Bracket Pair Colorizer |      |       |
+
+
+#### include what you see
+
+```
+apt install iwyu
+```
+
+```
+"iwyu.exe": "/usr/bin/iwyu", 
+"iwyu.compile_commands": "${workspaceFolder}/build/compile_commands.json"
+```
+
 
 #### makefile Tools
 ```
