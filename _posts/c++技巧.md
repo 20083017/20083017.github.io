@@ -43,3 +43,27 @@ std::istream& operator>>(std::istream& in, dHeader& h) // non-const h
     return in;
 }
 ```
+
+# placement
+```
+#include 
+
+  void placement_demo()
+  { 
+    //1. 预分配缓冲
+    char * buff = new char [sizeof (Foo) ];  
+
+    //2. 使用 placement new
+    Foo * pfoo = new (buff) Foo;  
+    
+    //使用对象
+    unsigned int length = pfoo->size();  
+    pfoo->resize(100, 200);
+
+    //3. 显式调用析构函数
+    pfoo->~Foo();  
+    
+    //4. 释放预定义的缓冲
+    delete [] buff;  
+  }
+```
