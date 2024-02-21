@@ -200,3 +200,11 @@ wsl ip静态配置(未用到)
 # sudo ip addr add 192.168.31.164/24 broadcast 192.168.31.255 dev eth0
 # sudo ip route add 0.0.0.0/0 via 192.168.31.1 dev eth0
 ```
+
+
+### wsl 与windows 时钟不同步
+```
+timedatectl set-local-rtc 1 --adjust-system-clock
+
+https://www.cnblogs.com/xiaotong-sun/p/16138941.html
+```
