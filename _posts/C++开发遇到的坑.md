@@ -98,5 +98,13 @@ free(x); // Deallocate the memory
 原文链接：https://blog.csdn.net/norman_irsa/article/details/114754944
 ```
 
+### 未定义的符号
+cpp 文件生成顺序很重要
+```
+linux 命名空间问题，可能的原因 cmake cpp文件生成顺序，循环引用？
+
+-Wl,--whole-archive  可能会导致重定义
+```
+
 
 
