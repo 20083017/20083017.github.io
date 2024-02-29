@@ -7,6 +7,14 @@ https://www.jianshu.com/p/3a2df9b7c353
 
 链接  -pthread  -lasan， pthread 在前边。
 
+### leak
+```
+linux 或者虚拟可以查leak， wsl 查不出来~
+```
+### address
+```
+wsl可以查出 use_after_free等问题
+```
 
 ### android asan
 
