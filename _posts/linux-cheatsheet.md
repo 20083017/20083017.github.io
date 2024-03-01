@@ -272,7 +272,7 @@ ls -l 4472_gid | awk -F' ' '{print $9}' | xargs -i sh -c  'cat 4472_gid/{}' |  x
 ssh -oHostKeyAlgorithms=+ssh-dss root@192.168.8.109
 
 
-
+### shell 修改默认bash dash 
 
 
 
