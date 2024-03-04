@@ -45,3 +45,15 @@ set_target_properties(mylib PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_
  foo.dot 转换为png
  dot -Tpng foo.dot -o foo.png
 
+ ### version_script
+
+ ``
+要在CMake中为特定目标启用version script，可以使用`set_target_properties`命令并设置`LINK_FLAGS`属性。例如，假设您有一个名为`my_target`的目标，并且您想要使用名为`my_version_script`的版本脚本文件，则可以使用以下命令：
+
+```
+set_target_properties(my_target PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/my_version_script")
+```
+
+这将为`my_target`目标设置链接标志，以便在链接时使用`my_version_script`版本脚本文件。请注意，`-Wl`选项用于将选项传递给链接器。`CMAKE_CURRENT_SOURCE_DIR`变量包含当前正在处理的CMakeLists.txt文件的目录路径。`
+```
+
