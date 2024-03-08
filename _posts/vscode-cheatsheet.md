@@ -86,3 +86,19 @@ settings.json 配置
 ```
 
 sudo apt install liblldb-15-dev
+
+
+### bash debug
+注意参数配置   
+```
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "bashdb",
+            "request": "launch",
+            "name": "Bash-Debug (simplest configuration)",
+            "program": "/home/liuquan6/project/test/miconnect/native/build.sh"
+            "args": [ "-c" "make" "-t" "debug" "-p" "linux" "-a" "camera-pro3" "rebuild" ]
+        }
+    ]
+```
