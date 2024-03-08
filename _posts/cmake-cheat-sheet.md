@@ -57,3 +57,14 @@ set_target_properties(my_target PROPERTIES LINK_FLAGS "-Wl,--version-script=${CM
 这将为`my_target`目标设置链接标志，以便在链接时使用`my_version_script`版本脚本文件。请注意，`-Wl`选项用于将选项传递给链接器。`CMAKE_CURRENT_SOURCE_DIR`变量包含当前正在处理的CMakeLists.txt文件的目录路径。`
 ```
 
+###  强制动态库
+```
+add_dependencies(${TARGET_NAME} micontinuity)
+if(TARGET micontinuity_so)
+    add_library(micontinuity_so SHARED IMPORTED)
+    message("CMAKE_INSTALL_LIBDIR is "
+        "${ROOT_PATH}/cmake-build-script/linux-release/router-rc01/runtime/services/libmicontinuity.so")
+    set_target_properties(micontinuity_so PROPERTIES IMPORTED_LOCATION
+        "${ROOT_PATH}/cmake-build-script/linux-release/router-rc01/runtime/services/libmicontinuity.so")
+endif()
+```
