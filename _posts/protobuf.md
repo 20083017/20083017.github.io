@@ -52,3 +52,72 @@ plugin本身需要访问Tensorflow的接口，而这些接口常常又含有prot
 糟糕的用例： cmake
 cmake 3.16做了一个火上浇油的事情：当你使用find_package(Protobuf)的时候，你需要提前知道你找到的究竟是动态库还是静态库，如果是静态库那么你需要设置Protobuf_USE_STATIC_LIBS成OFF，否则在Windows上链接会失败。请注意： 不是cmake告诉你它找到的是什么，而是你要主动告诉它，它找到的会是什么。
 ```
+
+###
+
+```
+#!/usr/bin/env bash
+
+# Run this script to regenerate descriptor.pb.{h,cc} after the protocol
+# compiler changes.  Since these files are compiled into the protocol compiler
+# itself, they cannot be generated automatically by a make rule.  "make check"
+# will fail if these files do not match what the protocol compiler would
+# generate.
+ROOT_PATH=$(pwd)/..
+echo "ROOT_PATH is" ${ROOT_PATH}
+
+echo "Set protoc tool ..."
+if [ $# -eq 2 ]; then
+  PROTOC=${ROOT_PATH}/$1/protoc
+  echo "PROTOC PATH is " ${PROTOC}
+  echo "LIB Version is " $2
+  # 匹配cmakelists中的THIRD_PROTOBUF_PATH，替换为需要更新的版本
+  sed -i "s/set(THIRD_PROTOBUF_PATH \"\${THIRD_PATH}\/protobuf-.*\")/set(THIRD_PROTOBUF_PATH \"\${THIRD_PATH}\/${2}\")/" ${ROOT_PATH}/CMakeLists.txt
+else
+  echo "Please set protoc path exit!"
+  exit 1
+fi
+
+declare -a RUNTIME_PROTO_FILES=(\
+${ROOT_PATH}/runtime/services/core/networking/auth/src/auth.proto \
+${ROOT_PATH}/runtime/services/core/networking/proto/networking.protoo )
+
+
+CORE_PROTO_IS_CORRECT=0
+PROCESS_ROUND=1
+
+TMP=$(mktemp -d)
+echo "tmp is $TMP"
+echo "Generating descriptor protos..."
+for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]} ; do
+    echo " runtime proto files is ${PROTO_FILE}"
+    pathname=$(dirname "$PROTO_FILE")
+    basename=$(basename "$PROTO_FILE")
+    $PROTOC -I=$pathname --cpp_out=$TMP $basename 
+done
+
+echo "Updating descriptor protos..."
+
+for PROTO_FILE in "${RUNTIME_PROTO_FILES[@]}"; do
+  echo " runtime proto files is ${PROTO_FILE}"
+  filename=$(basename "$PROTO_FILE" .proto)
+  BASE_NAME="${PROTO_FILE%.*}"
+
+  ! diff -q "${BASE_NAME}.pb.cc" "$TMP/${filename}.pb.cc" >/dev/null && \
+    cp "$TMP/${filename}.pb.cc" "${BASE_NAME}.pb.cc"
+
+  if [ "$filename" = "micontinuity_interface" ]; then
+    ! diff -q "${ROOT_PATH}/idl/ipc/include/micontinuity_interface.pb.h" "$TMP/${filename}.pb.h" >/dev/null && \
+      cp "$TMP/${filename}.pb.h" "${ROOT_PATH}/idl/ipc/include/micontinuity_interface.pb.h"
+  else
+    ! diff -q "${BASE_NAME}.pb.h" "$TMP/${filename}.pb.h" >/dev/null && \
+      cp "$TMP/${filename}.pb.h" "${BASE_NAME}.pb.h"
+  fi
+done
+
+rm -rf $TMP
+echo "Generating descriptor protos done..."
+
+# 回到native 目录
+cd ..
+```
