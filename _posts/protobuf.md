@@ -53,7 +53,7 @@ plugin本身需要访问Tensorflow的接口，而这些接口常常又含有prot
 cmake 3.16做了一个火上浇油的事情：当你使用find_package(Protobuf)的时候，你需要提前知道你找到的究竟是动态库还是静态库，如果是静态库那么你需要设置Protobuf_USE_STATIC_LIBS成OFF，否则在Windows上链接会失败。请注意： 不是cmake告诉你它找到的是什么，而是你要主动告诉它，它找到的会是什么。
 ```
 
-###
+### auto generate 脚本
 
 ```
 #!/usr/bin/env bash
