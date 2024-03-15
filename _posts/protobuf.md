@@ -121,3 +121,34 @@ echo "Generating descriptor protos done..."
 # 回到native 目录
 cd ..
 ```
+
+
+```
+# Modification of standard 'lyra_protobuf_generate_cpp()' with protobuf-lite support
+# Usage:
+#   lyra_protobuf_generate_cpp(<proto_CPP_OUT_PATH> <proto_H_OUT_PATH> <proto_files>)
+function(lyra_protobuf_generate_cpp TARGET_NAME CPP_OUT_PATH H_OUT_PATH PROTO_PATH)
+
+  file(GLOB_RECURSE PROTO_FILES "${PROTO_PATH}/*.proto")
+  foreach(FILE ${PROTO_FILES})
+    message("FILE is" ${FILE}) 
+    # filename without extention
+    get_filename_component(FILE_WE ${FILE} NAME_WE)   
+
+    if(EXISTS ${H_OUT_PATH}/${FILE_WE}.pb.h)
+        file(REMOVE ${H_OUT_PATH}/${FILE_WE}.pb.h)
+    endif()
+    if(EXISTS ${H_OUT_PATH}/${FILE_WE}.pb.cc)
+        file(REMOVE ${H_OUT_PATH}/${FILE_WE}.pb.cc)
+    endif()
+
+    add_custom_command(
+        OUTPUT ${H_OUT_PATH}/${FILE_WE}.pb.h
+        OUTPUT ${CPP_OUT_PATH}/${FILE_WE}.pb.cc
+        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} --proto_path=${PROTO_PATH} --cpp_out=${CPP_OUT_PATH} ${FILE_WE}.proto
+    )
+    set_source_files_properties(${H_OUT_PATH}/${FILE_WE}.pb.h ${CPP_OUT_PATH}/${FILE_WE}.pb.cc PROPERTIES GENERATED TRUE)
+    target_sources(${TARGET_NAME} PRIVATE ${CPP_OUT_PATH}/${FILE_WE}.pb.cc)
+  endforeach()
+endfunction()
+```
