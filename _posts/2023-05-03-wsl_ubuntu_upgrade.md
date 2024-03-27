@@ -206,5 +206,7 @@ wsl ip静态配置(未用到)
 ```
 timedatectl set-local-rtc 1 --adjust-system-clock
 
+timedatectl set-local-rtc 0 --adjust-system-clock  ok 
+
 https://www.cnblogs.com/xiaotong-sun/p/16138941.html
 ```
