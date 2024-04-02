@@ -19,3 +19,13 @@ bloaty -d compileunits -n 0 libsimple_decoder.so > compileunits.txt
 ```
 https://blog.csdn.net/weiwei9363/article/details/121475302
 ```
+
+分析各个段的占比
+```
+~/.toolchain/sdk_package_MC01/toolchain/bin/aarch64-openwrt-linux-size -A ./libmicontinuity_sdk.so.1.0.4032716
+```
+
+smaps 分析 不同库的占比
+
+cat /proc/$pid/smaps
+cat /proc/$pid/status
