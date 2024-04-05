@@ -17,3 +17,26 @@
 bloaty -d compileunits -n 0 libmicontinuity.so  > 1.txt
 ```
 
+
+static 静态分析 代码段
+```
+~/.toolchain/sdk_package_MC01/toolchain/bin/aarch64-openwrt-linux-size -A ./libmicontinuity_sdk.so.1.0.4032716
+```
+
+运行时分析 smaps
+```
+ cat /proc/39625/status
+ cat /proc/39625/smaps
+```
+
+pmap
+
+```
+你可以使用 `pmap` 命令来查看进程的内存映射情况，包括哪些内存区域是通过 `mmap` 分配的。具体命令如下：
+
+```
+pmap <pid>
+```
+
+其中 `<pid>` 是进程的 ID。该命令会输出进程的内存映射情况，包括每个内存区域的起始地址、大小、权限等信息。如果某个内存区域是通过 `mmap` 分配的，那么它的权限信息中会包含 `r-xp`、`r--p`、`rw-p` 等标志，其中 `p` 表示该内存区域是通过 `mmap` 分配的。
+```
