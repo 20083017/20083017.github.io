@@ -206,7 +206,15 @@ wsl ip静态配置(未用到)
 ```
 timedatectl set-local-rtc 1 --adjust-system-clock
 
-timedatectl set-local-rtc 0 --adjust-system-clock  ok 
+timedatectl set-local-rtc 0 --adjust-system-clock  ok
+
+  echo "source ~/update_time.sh" >> ~/.bashrc  打开shell，自动执行脚本
 
 https://www.cnblogs.com/xiaotong-sun/p/16138941.html
+```
+update_time.sh   
+```
+#!bin/bash
+
+sudo timedatectl set-local-rtc 0 --adjust-system-clock
 ```
