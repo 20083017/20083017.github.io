@@ -23,6 +23,19 @@ ccache --help
 ### ccache + distcc
 distcc 分布式编译工具
 
+###
+```
+# add only ext(.cpp .cxx .cc etc) files in the path 
+# Usage:
+#   lyra_aux_source_directory_ex(<PROTO_PATH> <OUT_SRCS>)
+function(lyra_aux_source_directory_ex ext PROTO_PATH OUT_SRCS)
+  file(GLOB SRC_FILES "${PROTO_PATH}/*${ext}")
+  list(APPEND ${OUT_SRCS} ${SRC_FILES})
+  set(${OUT_SRCS} ${${OUT_SRCS}} PARENT_SCOPE)
+endfunction()
+
+```
+
 
 ### 导出符号表
 ```
