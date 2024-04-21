@@ -125,6 +125,32 @@ size -A bin
 
 /proc/$pid/smaps   
 
+
+```
+成员名	含义
+Name	进程的名称
+Pid	PID。
+VmPeak	进程使用的最大虚拟内存，通常情况下它等于进程的内存描述符mm 中的 total_vm.
+VmSize	进程使用的虚拟内存，它等于mm->total_vm。
+VmLck	进程锁住的内存，它等于mm->locked_vm，这里指使用mlock()锁住的内存。
+VmPin	进程固定住的内存，它等于mm->pinned_vm，这里指使用 get_user_page()固定住的内存。
+VmHWM	进程使用的最大物理内存，它通常等于进程使用的匿名页面、文件映射页面以及共享内存页面的大小总和。
+VmRSS	进程使用的最大物理内存，它常常等于VmHWM，计算公式为 VmRSS= RssAnon+RssFile+RssShmem.
+RssAnon	进程使用的匿名页面，通过get_mm_counter(mm，MM_ANONPAGES)获取。
+RssFile	进程使用的文件映射页面，通过get_mm_counter(mm, MM_FILEPAGES)获取。
+RssShmem	进程使用的共享内存页面，通过get_mm_counter(mm, MM_SHMEMPAGES)获取。
+RssFile	进程使用的文件映射页面，通过get_mm_counter(mm, MM_FILEPAGES)获取 RssShmem:进程使用的共享内存页面，通过getmm_counter(mm,MM SHMEMPAGES获取。
+VmData	进程私有数据段的大小，它等于 mm->data_vm。
+VmStk	进程用户栈的大小，它等于mm->stack_vm。
+VmExe	进程代码段的大小，通过内存描述符mm中的start_code和end_code两个成员获取。
+VmLib	进程共享库的大小，通过内存描述符mm中的exec_vm和VmExe计算。
+VmPTE	进程页表大小，通过内存描述符 mm 中的pgtables_bytes 成员获取。
+VmSwap	进程使用的交换分区的大小，通过get_mm_counter(mm，MM_SWAPENTS)获取。
+HugetlbPages	进程使用巨页的大小，通过内存描述符 mm 中的 hugetlb_usage成员获取。
+https://blog.csdn.net/weixin_39247141/article/details/126273389
+```
+
+
 3、物理内存占用分析   
 
 4、 heap 占用分析   heap_profiler   
