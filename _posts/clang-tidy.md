@@ -1,14 +1,14 @@
 
 
-clang
-clangd
-lldb
-clang-tidy
-sudo apt-get install clang-tools
+clang   
+clangd   
+lldb   
+clang-tidy   
+sudo apt-get install clang-tools   
 
 
 ```
-run-clang-tidy.py from llvm-project
+run-clang-tidy.py from llvm-project 从llvm-project中copy出来
 ```
 
 .clang-tidy   
