@@ -49,6 +49,10 @@ VCEI exceptions         : not available
 
 # 常用操作
 
+#### mount
+mount 好像会自动mount。。   
+umount -l /dev/mmcblk0p1  强制umount   
+
 #### dmesg
 ```
 unix_time=echo "$(date +%s) - $(cat /proc/uptime | cut -f 1 -d' ') + 12106473.374733" | bc
