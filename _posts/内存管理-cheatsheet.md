@@ -153,6 +153,9 @@ https://blog.csdn.net/weixin_39247141/article/details/126273389
 
 3、物理内存占用分析   
 
+![image](https://github.com/20083017/20083017.github.io/assets/8308226/6646e78e-e5e5-4fae-843b-a28343068b17)
+
+
 4、 heap 占用分析   heap_profiler   
 
 
