@@ -152,3 +152,90 @@ function(lyra_protobuf_generate_cpp TARGET_NAME CPP_OUT_PATH H_OUT_PATH PROTO_PA
   endforeach()
 endfunction()
 ```
+
+```
+### GENERIC.CMAKE
+
+# add only ext(.cpp .cxx .cc etc) files in the path 
+# Usage:
+#   lyra_aux_source_directory_ex(<SRCS_PATH> <EXT> <OUT_SRCS>)
+function(lyra_aux_source_directory_ex SRCS_PATH EXT OUT_SRCS)
+  file(GLOB SRC_FILES "${SRCS_PATH}/*${EXT}")
+  list(APPEND ${OUT_SRCS} ${SRC_FILES})
+  set(${OUT_SRCS} ${${OUT_SRCS}} PARENT_SCOPE)
+endfunction()
+
+# lyra_protobuf_prepare_proto, remove then copy
+# Usage:
+#   lyra_protobuf_prepare_proto(<PROTO_SRC_PATH> <PROTO_PATH>)
+function(lyra_protobuf_prepare_proto PROTO_SRC_PATH PROTO_PATH)
+
+  file(GLOB PLATFORM_PROTO_FILES "${PROTO_SRC_PATH}/*.proto")
+
+  foreach(PLATFORM_FILE ${PLATFORM_PROTO_FILES})
+    # filename without extention
+    get_filename_component(PLATFORM_FILE_WE ${PLATFORM_FILE} NAME_WE)
+    message("PLATFORM_FILE is" ${PLATFORM_FILE})
+    #TODO 进一步优化，文件存在且内容相同时就不再每次都拷贝
+    if(EXISTS ${PROTO_PATH}/${PLATFORM_FILE_WE}.proto)
+      file(REMOVE ${PROTO_PATH}/${PLATFORM_FILE_WE}.proto)
+    endif()
+    file(COPY "${PLATFORM_FILE}" DESTINATION "${PROTO_PATH}")
+  endforeach()
+endfunction()
+
+# Modification of standard 'lyra_protobuf_generate_cpp()' with protobuf-lite support
+# Usage:
+#   lyra_protobuf_generate_cpp(<proto_CPP_OUT_PATH> <proto_H_OUT_PATH> <proto_files>)
+function(lyra_protobuf_generate_cpp TARGET_NAME CPP_OUT_PATH H_OUT_PATH PROTO_PATH)
+
+  file(GLOB PROTO_SRCS "${PROTO_PATH}/*.pb.cc")
+  foreach(PROTO_SRC ${PROTO_SRCS})
+    if(EXISTS ${PROTO_SRC})
+      file(REMOVE ${PROTO_SRC})
+    endif()
+  endforeach()
+
+  file(GLOB PROTO_INCS "${PROTO_PATH}/*.pb.h")
+  foreach(PROTO_INC ${PROTO_INCS})
+    if(EXISTS ${PROTO_INC})
+      file(REMOVE ${PROTO_INC})
+    endif()
+  endforeach()
+
+  set(TEMP_DIR ${CPP_OUT_PATH}/temp)
+  file(MAKE_DIRECTORY ${TEMP_DIR})
+
+  file(GLOB PROTO_FILES "${PROTO_PATH}/*.proto")
+  foreach(FILE ${PROTO_FILES})
+    message("FILE is" ${FILE})
+    # filename without extention
+    get_filename_component(FILE_WE ${FILE} NAME_WE)
+
+    execute_process(
+    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} --proto_path=${PROTO_PATH} --cpp_out=${CPP_OUT_PATH}/temp ${FILE_WE}.proto
+    )
+
+    execute_process(
+      COMMAND sh -c " if [ -f  ${CPP_OUT_PATH}/${FILE_WE}.pb.h ];then ! diff -q ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.h  ${CPP_OUT_PATH}/${FILE_WE}.pb.h >/dev/null && \
+      cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.h ${CPP_OUT_PATH}/${FILE_WE}.pb.h 
+      else
+         cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.h ${CPP_OUT_PATH}/${FILE_WE}.pb.h 
+      fi"
+    )
+
+    execute_process(
+      COMMAND sh -c "  if [ -f  ${CPP_OUT_PATH}/${FILE_WE}.pb.cc ];then 
+        ! diff -q ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.cc  ${CPP_OUT_PATH}/${FILE_WE}.pb.cc >/dev/null && \
+      cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.cc ${CPP_OUT_PATH}/${FILE_WE}.pb.cc 
+      else 
+         cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.cc ${CPP_OUT_PATH}/${FILE_WE}.pb.cc 
+      fi"
+    )
+
+    set_source_files_properties(${H_OUT_PATH}/${FILE_WE}.pb.h ${CPP_OUT_PATH}/${FILE_WE}.pb.cc PROPERTIES GENERATED TRUE)
+    target_sources(${TARGET_NAME} PRIVATE ${CPP_OUT_PATH}/${FILE_WE}.pb.cc)
+  endforeach()
+  file(REMOVE_RECURSE ${CPP_OUT_PATH}/temp)
+endfunction()
+```
