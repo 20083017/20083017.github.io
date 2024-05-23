@@ -239,3 +239,60 @@ function(lyra_protobuf_generate_cpp TARGET_NAME CPP_OUT_PATH H_OUT_PATH PROTO_PA
   file(REMOVE_RECURSE ${CPP_OUT_PATH}/temp)
 endfunction()
 ```
+
+```
+  if(${CMAKE_HOST_SYSTEM_NAME_} STREQUAL "windows")
+      execute_process(
+        COMMAND cmd /c " ${PROTOBUF_PROTOC_EXECUTABLE} --proto_path=${PROTO_PATH} --cpp_out=${CPP_OUT_PATH}/temp ${FILE_WE}.proto"
+        COMMAND cmd /c  diff_pb.bat ${CPP_OUT_PATH}\\temp\\${FILE_WE}.pb.h ${CPP_OUT_PATH}\\${FILE_WE}.pb.h WORKING_DIRECTORY ${ROOT_PATH}/tools/cmake
+        COMMAND cmd /c  diff_pb.bat ${CPP_OUT_PATH}\\temp\\${FILE_WE}.pb.cc ${CPP_OUT_PATH}\\${FILE_WE}.pb.cc WORKING_DIRECTORY ${ROOT_PATH}/tools/cmake
+      )  
+    else()
+      #COMMAND sh -c " ${ROOT_PATH}/tools/cmake/diff_pb.sh ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.cc ${CPP_OUT_PATH}/${FILE_WE}.pb.cc WORKING_DIRECTORY ${ROOT_PATH}/tools/cmake" not working
+
+      execute_process(
+        COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} --proto_path=${PROTO_PATH} --cpp_out=${CPP_OUT_PATH}/temp ${FILE_WE}.proto
+      )
+  
+      execute_process(
+        COMMAND sh -c " if [ -f  ${CPP_OUT_PATH}/${FILE_WE}.pb.h ];then ! diff -q ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.h  ${CPP_OUT_PATH}/${FILE_WE}.pb.h >/dev/null && \
+        cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.h ${CPP_OUT_PATH}/${FILE_WE}.pb.h 
+        else
+            cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.h ${CPP_OUT_PATH}/${FILE_WE}.pb.h 
+        fi"
+      )
+  
+      execute_process(
+        COMMAND sh -c "  if [ -f  ${CPP_OUT_PATH}/${FILE_WE}.pb.cc ];then 
+          ! diff -q ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.cc  ${CPP_OUT_PATH}/${FILE_WE}.pb.cc >/dev/null && \
+        cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.cc ${CPP_OUT_PATH}/${FILE_WE}.pb.cc 
+        else 
+            cp ${CPP_OUT_PATH}/temp/${FILE_WE}.pb.cc ${CPP_OUT_PATH}/${FILE_WE}.pb.cc 
+        fi"
+      )
+    endif()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
