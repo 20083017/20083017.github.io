@@ -2,6 +2,12 @@
 
 #### 并发编译
 
+cmake no exception no rtti   
+```
+-fno-exceptions and -fno-rtti
+```
+
+
 未生效
 ```
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOS_POSIX -DOS_ANDROID -DOS_LINUX -DMULTITHREADED_BUILD=4")
