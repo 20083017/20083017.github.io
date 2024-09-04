@@ -115,6 +115,14 @@ make
 make install
 ```
 
+### 性能优化策略
+```
+1、指令优化-aesni、aesce etc
+2、硬件加密
+3、asm
+other、 加密block size 也影响速度，优化block size？！！
+```
+
 
 
 
