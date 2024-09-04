@@ -78,3 +78,60 @@ install之后，prefix 路径
 
 
 ```
+
+
+### 不同的ssl库性能对比
+
+```
+wolfssl 32位armv7平台交叉编译
+
+$ ./configure \
+    --host=arm-linux-gnueabihf \
+    CC=/home/liuquan6/.toolchain/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-9.1.0-gcc  \
+    AR=/home/liuquan6/.toolchain/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-9.1.0-ar  \
+    STRIP=/home/liuquan6/.toolchain/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-9.1.0-strip  \
+    RANLIB=/home/liuquan6/.toolchain/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/gcc-sigmastar-9.1.0-2019.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-9.1.0-ranlib  \
+    --prefix=/mnt/e/test/wolfssl/output \
+    CFLAGS="-march=armv8-a  \
+        -DHAVE_PK_CALLBACKS -DWOLFSSL_USER_IO -DNO_WRITEV -DTIME_T_NOT_64BIT" \
+    --disable-filesystem --enable-fastmath --enable-sp-asm\
+    --disable-shared
+$ make
+$ make install
+
+
+openssl 32位 armv7 交叉编译
+某些平台 不禁用 asm 会导致编译错误！！！！
+tar -xvf openssl-3.0.12.tar.gz
+cd openssl-3.0.12/
+
+/* 安装目录设为当前目录下的tmp，no-asm、shard的功能--阅读INSTALL.md */
+./config no-asm shared --prefix=$PWD/tmp	
+vi Makefile
+	/CROSS_COMPILE			/* 搜索、配置为自己的交叉编译工具链, 例：arm-linux- */
+	/-m64					/* 搜索-m64，将“-m64”删除 */
+	:wq						/* 保存并退出Makefile */
+make
+make install
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
