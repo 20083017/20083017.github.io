@@ -123,9 +123,12 @@ make install
 other、 加密block size 也影响速度，优化block size？！！
 ```
 
+### cryptodev engine 
+对应硬件加密  需要安装cryptodev.ko
+![image](https://github.com/user-attachments/assets/f714e814-2148-4daf-a71f-e06cc82646f4)
 
 
-
+![image](https://github.com/user-attachments/assets/56ab6e91-789f-475f-8be9-5be04a229c03)
 
 
 
