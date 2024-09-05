@@ -106,7 +106,8 @@ tar -xvf openssl-3.0.12.tar.gz
 cd openssl-3.0.12/
 
 /* 安装目录设为当前目录下的tmp，no-asm、shard的功能--阅读INSTALL.md */
-./config no-asm shared --prefix=$PWD/tmp	
+./config no-asm shared --prefix=$PWD/tmp
+硬件engine -enable-devcryptoeng
 vi Makefile
 	/CROSS_COMPILE			/* 搜索、配置为自己的交叉编译工具链, 例：arm-linux- */
 	/-m64					/* 搜索-m64，将“-m64”删除 */
