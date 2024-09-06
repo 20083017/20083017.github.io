@@ -131,7 +131,92 @@ other、 加密block size 也影响速度，优化block size？！！
 
 ![image](https://github.com/user-attachments/assets/56ab6e91-789f-475f-8be9-5be04a229c03)
 
+### crytodev example
+openvpn ^_^
+```
+#include <openssl/conf.h>
+#include <openssl/des.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/objects.h>
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
 
+#include <openssl/engine.h>
+
+#if !defined(LIBRESSL_VERSION_NUMBER)
+#include <openssl/kdf.h>
+#endif
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/provider.h>
+#include <openssl/core_names.h>
+#endif
+
+int main(int ac, char **av, char **ae)
+{
+
+   ENGINE *e = NULL;
+    if ((e = ENGINE_by_id("devcrypto")) == NULL) {
+        printf("cryptodev engine not found!\n\n");
+        return 0;
+    }
+
+  const EVP_CIPHER *cipher;
+  //unsigned char key[32];
+  int len;
+  unsigned char tag[16];
+
+  unsigned char key[] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31};//av[1];
+  unsigned char iv[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b};
+  unsigned char data[] = {0x0,0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xa,0xb,0xc,0xd,0xe,0xf,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f,0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,0x2e,0x2f,0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3a,0x3b};
+
+  ERR_load_crypto_strings();
+
+  //encrypt
+  EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+  cipher = EVP_aes_256_gcm();
+
+ 
+
+  EVP_EncryptInit_ex(ctx, cipher, NULL, NULL, NULL);
+  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, sizeof(iv), NULL);
+  EVP_EncryptInit_ex(ctx, NULL, NULL, key, iv);
+
+  len = sizeof(data);
+  int h=0;
+
+  EVP_EncryptUpdate(ctx, data, &len, data, len);
+  EVP_EncryptFinal(ctx, tag, &h);
+
+  printf("DATA:");
+  for (int i = 0; i < sizeof(data); ++i)
+    printf("%02X,", data[i]);
+  printf("\n");
+
+  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, sizeof tag, tag);
+  printf("TAG:");
+  for (int i = 0; i < sizeof(tag); ++i)
+    printf("%02X,", tag[i]);
+  printf("\n");
+
+  //decrypt
+  ctx = EVP_CIPHER_CTX_new();      
+  EVP_DecryptInit (ctx, cipher, key, iv);
+  EVP_CIPHER_CTX_ctrl (ctx, EVP_CTRL_GCM_SET_TAG, 16, tag);
+  EVP_DecryptInit (ctx, NULL, key, iv);
+  EVP_DecryptUpdate (ctx, data, &h, data, len);
+  printf("DATA:");
+  for (int i = 0; i < sizeof(data); ++i)
+    printf("%02X,", data[i]);
+  printf("\n");
+  int dec_success = EVP_DecryptFinal (ctx, data, &h);
+  printf("TAG: %d\n", dec_success);
+
+  fflush(stdout);
+//   freeCrypto();
+  return 0;
+}
+```
 
 
 
