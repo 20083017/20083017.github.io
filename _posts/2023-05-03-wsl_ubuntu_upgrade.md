@@ -134,15 +134,7 @@ $nrconf{ucodehints} = 0;
 ```
 
 
-### 修改wsl 可用内存
 
-```
-[wsl2]
-memory=2GB
-swap=4GB
-localhostForwarding=true
-
-```
 
 ### 设置wsl 默认的编辑器
 ```
@@ -194,6 +186,17 @@ c/users/username/.wslconfig
 networkingMode=bridged
 vmSwitch=wsl
 ```
+
+### 修改wsl 可用内存
+
+```
+[wsl2]
+memory=2GB
+swap=4GB
+localhostForwarding=true
+
+```
+
 wsl ip静态配置(未用到)   
 ```
 # sudo ip addr del $(ip addr show eth0 | grep 'inet\b' | awk '{print $2}' | head -n 1) dev eth0
