@@ -14,3 +14,7 @@ memcpy.S hook了 memcpy
 aarch64  memcpy_select_aarch64.cpp hook了memcpy
 ```
 
+### build
+```
+python3 ./build/fbcode_builder/getdeps.py --allow-system-packages --scratch-path /home/ubuntu/folly_install build
+```
