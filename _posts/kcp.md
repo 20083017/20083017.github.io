@@ -76,7 +76,28 @@ client 端功能
 ```
 
 ### 模拟丢包工具
+
+#### 随机丢包10%
+```
+sudo tc qdisc add dev eth0 root netem loss 10%
 ```
 
+#### 延迟40ms
+```
+sudo tc qdisc add dev eth0 root netem delay 40ms
+```
+
+#### 作用于某个地址
+
+```
+sudo tc qdisc add dev eth0 root handle 1: prio
+sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem loss 13% delay 40ms
+sudo tc filter add dev eth0 protocol ip parent 1:0 u32 match ip dst 199.91.72.192 match ip dport 36000 0xffff flowid 1:3
+```
+上面的命令，我们告诉 tc，对发往 199.91.72.192:36000 的网络包产生 13% 的丢包和 40ms 的延迟，而发往其它目的地址的网络包将不受影响。   
+
+#### 删除规则
+```
+sudo tc qdisc del dev eth0 root
 ```
 
