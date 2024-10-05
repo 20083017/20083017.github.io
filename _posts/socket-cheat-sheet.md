@@ -109,4 +109,9 @@ tcp选项 keepalive 查看
 sysctl -a | grep net.ipv4
 wireshark 抓包，66字节表示 tcp 心跳协议，未关闭。
 
+### socket options
+SO_LOWDELAY
+
+etc.
+
 
