@@ -56,6 +56,36 @@ benchmark
 ![image](https://github.com/user-attachments/assets/65f464ed-224f-41af-ab6f-c00fee7f77ca)
 
 
+### 缓存控制
+https://github.com/skywind3000/kcp/wiki/Flow-Control-for-Users
+```
+缓存控制：游戏控制数据
+大部分逻辑严密的 TCP游戏服务器，都是使用无阻塞的 tcp链接配套个 epoll之类的东西，当后端业务向用户发送数据时会追加到用户空间的一块发送缓存，比如 ring buffer 之类，当 epoll 到 EPOLL_OUT 事件时（其实也就是tcp发送缓存有空余了，不会EAGAIN/EWOULDBLOCK的时候），再把 ring buffer 里面暂存的数据使用 send 传递给系统的 SNDBUF，直到再次 EAGAIN。
+
+那么 TCP SERVER的后端业务持续向客户端发送数据，而客户端又迟迟没能力接收怎么办呢？此时 epoll 会长期不返回 EPOLL_OUT事件，数据会堆积在该用户的 ring buffer 之中，如果堆积越来越多，ring buffer 会自增长的话就会把 server 的内存给耗尽。因此成熟的 tcp 游戏服务器的做法是：当客户端应用层发送缓存（非tcp的sndbuf）中待发送数据超过一定阈值，就断开 TCP链接，因为该用户没有接收能力了，无法持续接收游戏数据。
+
+使用 KCP 发送游戏数据也一样，当 ikcp_waitsnd 返回值超过一定限度时，你应该断开远端链接，因为他们没有能力接收了。
+
+但是需要注意的是，KCP的默认窗口都是32，比tcp的默认窗口低很多，实际使用时应提前调大窗口，但是为了公平性也不要无止尽放大（不要超过1024）
+
+```
+
+```
+缓存控制：传送文件
+你用 tcp传文件的话，当网络没能力了，你的 send调用要不就是阻塞掉，要不就是 EAGAIN，然后需要通过 epoll 检查 EPOLL_OUT事件来决定下次什么时候可以继续发送。
+
+KCP 也一样，如果 ikcp_waitsnd 超过阈值，比如2倍 snd_wnd，那么停止调用 ikcp_send，ikcp_waitsnd的值降下来，当然期间要保持 ikcp_update 调用。
+```
+
+```
+缓存控制：实时视频直播
+视频点播和传文件一样，而视频直播，一旦 ikcp_waitsnd 超过阈值了，除了不再往 kcp 里发送新的数据包，你的视频应该进入一个 “丢帧” 状态，直到 ikcp_waitsnd 降低到阈值的 1/2，这样你的视频才不会有积累延迟。
+
+这和使用 TCP推流时碰到 EAGAIN 期间，要主动丢帧的逻辑时一样的。
+
+同时，如果你能做的更好点，waitsnd 超过阈值了，代表一段时间内网络传输能力下降了，此时你应该动态降低视频质量，减少码率，等网络恢复了你再恢复。
+```
+
 ### FEC 丢包率 
 ```
 高丢包率的情况下使用
