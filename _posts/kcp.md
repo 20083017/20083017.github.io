@@ -131,3 +131,26 @@ sudo tc filter add dev eth0 protocol ip parent 1:0 u32 match ip dst 199.91.72.19
 sudo tc qdisc del dev eth0 root
 ```
 
+
+### 为什么单个TCP连接很难占满带宽
+```
+计算 TCP吞吐量的公式
+
+TCP窗口大小(bits) / 延迟(秒) = 每秒吞吐量(bits)
+
+比如说windows系统一般的窗口大小为64K， 中国到美国的网络延迟为150ms.
+
+64KB = 65536 Bytes. 65536 * 8 = 524288 bits
+
+每秒吞吐量(bits) = 524288 / 0.15 = 3495253 bit/s = 0.41MB/S
+
+所以就算是10M专线，那么单个Tcp连接也最大只能达到0.41M的速度。
+
+计算最优 TCP窗口大小 的公式
+
+带宽(bits每秒) * 往返延迟(秒) = TCP窗口大小(bits) / 8 = TCP窗口大小(字节)
+
+因此在芝加哥和纽约之间 10M 的带宽和 150ms 的延迟的例子中，可以计算如下：
+
+10 * 1024* 1024 bps * 0.15 seconds = 1572864 bits / 8 = 1,572,864 Bytes = 1.5 MB
+```
