@@ -140,6 +140,7 @@ $nrconf{ucodehints} = 0;
 ```
 sudo update-alternatives --config editor
 选择vim 或者 其他编辑器即可
+git config --global core.editor vim
 ```
 
 ### 关闭dash
