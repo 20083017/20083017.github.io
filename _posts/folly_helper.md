@@ -18,3 +18,6 @@ aarch64  memcpy_select_aarch64.cpp hook了memcpy
 ```
 python3 ./build/fbcode_builder/getdeps.py --allow-system-packages --scratch-path /home/ubuntu/folly_install build
 ```
+
+### barrier.h
+
