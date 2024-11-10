@@ -198,6 +198,12 @@ localhostForwarding=true
 
 ```
 
+### wsl hosts 文件
+```
+# [network]
+# generateHosts = false
+```
+
 wsl ip静态配置(未用到)   
 ```
 # sudo ip addr del $(ip addr show eth0 | grep 'inet\b' | awk '{print $2}' | head -n 1) dev eth0
