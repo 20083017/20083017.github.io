@@ -14,6 +14,11 @@ cmake no exception no rtti
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOS_POSIX -DOS_ANDROID -DOS_LINUX -DMULTITHREADED_BUILD=4")
 ```
 
+### 指定编译器
+```
+cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang
+```
+
 ### ccache  windows 
 安装ccache后添加到环境变量
 ccache path 目录
