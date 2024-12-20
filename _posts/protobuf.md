@@ -5,6 +5,11 @@
 protoc -I=Proto文件路径 –cpp_out=指定输出.h和.cc的目录 Proto文件，也可以使用protoc -h 查看更多帮助。
 格式：protoc -I = proto文件路径 --cpp_out = 输出文件路径 proto文件名
 
+### fpic
+```
+ bazel build -c opt --copt '-fPIC' :protobuf_nowkt --enable_bzlmod
+```
+
 ### protobuf-lite
 
 ```
