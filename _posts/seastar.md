@@ -14,4 +14,9 @@ sudo ./configure.py --mode=debug --cook=fmt
 sudo ninja -C build/debug -j4
 ```
 
+### tcp 测试
+```
+./tcp_sctp_server_demo
+ ./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=32 --test=rxrx
+```
 
