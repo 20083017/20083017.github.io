@@ -6,12 +6,15 @@
 
 修改  /etc/hosts 添加dns 至 github.com
 
-gcc11 好像不好使，   
-修改configure.py 默认编译工具为 clang++， clang14   
+gcc11 好像不好使，   去掉了一些tests的demo 主要是rpc相关的，可以跑起来了。
+修改configure.py 默认编译工具为 clang++， clang14,也不好使  
 
 ```
 sudo ./configure.py --mode=debug --cook=fmt
 sudo ninja -C build/debug -j4
+
+sudo ./configure.py --mode=debug --cook=fmt --compile-comman
+ds-json --enable-dpdk
 ```
 
 ### tcp 测试
