@@ -20,6 +20,7 @@ ds-json --enable-dpdk
 ### tcp 测试
 ```
 ./tcp_sctp_server_demo
- ./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=32 --test=rxrx
+ ./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=32 --test=rxrx  连接数太多, 卡住了？
+./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=2 --test=rxrx
 ```
 
