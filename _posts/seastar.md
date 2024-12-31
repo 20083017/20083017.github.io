@@ -14,7 +14,7 @@ sudo ./configure.py --mode=debug --cook=fmt
 sudo ninja -C build/debug -j4
 
 sudo ./configure.py --mode=debug --cook=fmt --compile-comman
-ds-json --enable-dpdk
+ds-json --enable-dpdk --dpdk-pmd
 ```
 
 ### tcp 测试
