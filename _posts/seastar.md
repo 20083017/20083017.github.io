@@ -29,7 +29,7 @@ ds-json --enable-dpdk
 set args --network-stack=native --network-stack=native --dpdk-pmd --tap-device=eth0 --host-ipv4-addr=127.0.0.1 --gw-ipv4-addr=127.0.0.1  --netmask-ipv4-addr=255.255.255.0
 ```
 
-###
+### dpdk 配置
 ```
 EAL: Detected CPU lcores: 8
 EAL: Detected NUMA nodes: 1
@@ -44,5 +44,35 @@ EAL: Error - exiting with code: 1
   Cause: Cannot init EAL
 ```
 
+```
+解决方法：
+先进行dpdk的配置，配置方法请另行搜索，然后进行大页的配置以及挂载。
+大页配置：
+查看虚拟机大叶内存
+cat /proc/meminfo | grep Huge
+设置内存大小
+echo ‘1024’ > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+
+大页挂载：
+mkdir /mnt/huge
+mount -t hugetlbfs nodev /mnt/huge
+
+mkdir的时候会提示文件存在，继续就行了。
+```
+
+
+```
+EAL: get_seg_fd(): open '/dev/hugepages/rtemap_0' failed: Permission denied
+EAL: Couldn't get fd on hugepage file
+EAL: error allocating rte services array
+EAL: FATAL: rte_service_init() failed
+EAL: rte_service_init() failed
+EAL: Error - exiting with code: 1
+  Cause: Cannot init EAL
+```
+
+```
+
+```
 
 
