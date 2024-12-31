@@ -29,3 +29,20 @@ ds-json --enable-dpdk
 set args --network-stack=native --network-stack=native --dpdk-pmd --tap-device=eth0 --host-ipv4-addr=127.0.0.1 --gw-ipv4-addr=127.0.0.1  --netmask-ipv4-addr=255.255.255.0
 ```
 
+###
+```
+EAL: Detected CPU lcores: 8
+EAL: Detected NUMA nodes: 1
+EAL: Detected static linkage of DPDK
+[New Thread 0x7fffd60eb640 (LWP 211240)]
+EAL: Multi-process socket /run/user/1000//dpdk/rte/mp_socket
+[New Thread 0x7fffd58cd640 (LWP 211241)]
+EAL: Selected IOVA mode 'VA'
+EAL: FATAL: Cannot get hugepage information.
+EAL: Cannot get hugepage information.
+EAL: Error - exiting with code: 1
+  Cause: Cannot init EAL
+```
+
+
+
