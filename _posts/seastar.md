@@ -45,6 +45,7 @@ EAL: Error - exiting with code: 1
 ```
 
 ```
+run_with_dpdk.sh
 解决方法：
 先进行dpdk的配置，配置方法请另行搜索，然后进行大页的配置以及挂载。
 大页配置：
