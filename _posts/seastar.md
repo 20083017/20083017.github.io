@@ -51,7 +51,8 @@ run_with_dpdk.sh
 查看虚拟机大叶内存
 cat /proc/meminfo | grep Huge
 设置内存大小
-echo ‘1024’ > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+su
+echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
 
 大页挂载：
 mkdir /mnt/huge
