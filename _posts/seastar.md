@@ -20,7 +20,7 @@ sudo ./configure.py --mode=debug --cook=fmt --compile-commands-json --enable-dpd
 ```
 
 默认 posix-stack
-
+demo 需要使用root权限运行
 ./tcp_sctp_server_demo
  ./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=32 --test=rxrx  连接数太多, 卡住了？
 ./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=2 --test=rxrx
