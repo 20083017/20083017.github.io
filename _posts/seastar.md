@@ -25,7 +25,7 @@ sudo ./configure.py --mode=debug --cook=fmt --compile-commands-json --enable-dpd
  ./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=32 --test=rxrx  连接数太多, 卡住了？
 ./tcp_sctp_client_demo --server 127.0.0.1:10000 --conn=2 --test=rxrx
 
-set args --network-stack=native --network-stack=native --dpdk-pmd --tap-device=eth0 --host-ipv4-addr=127.0.0.1 --gw-ipv4-addr=127.0.0.1  --netmask-ipv4-addr=255.255.255.0
+set args --network-stack=native --dpdk-pmd --tap-device=eth0 --host-ipv4-addr=127.0.0.1 --gw-ipv4-addr=127.0.0.1  --netmask-ipv4-addr=255.255.255.0
 ```
 
 ### dpdk 配置
