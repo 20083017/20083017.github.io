@@ -88,6 +88,9 @@ kernel=C:\\Users\\mi\\bzImage
 kernelCommandLine=intel_iommu=on iommu=pt kvm.ignore_msrs=1 kvm-intel.nested=1 kvm-intel.ept=1 kvm-intel.emulate_invalid_guest_state=0 kvm-intel.enable_shadow_vmcs=1 kvm-intel.enable_apicv=1
 ```
 
+#### 注意
+You could clone https://github.com/microsoft/WSL2-Linux-Kernel.git and checkout linux-msft-wsl-5.15.79.1. Export the headers and build your module.   
+
 ### 网卡配置
 
 ```
