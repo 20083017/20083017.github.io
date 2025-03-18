@@ -86,5 +86,23 @@ https://blog.csdn.net/Xin_101/article/details/125929428
 
 #### windows 设置 程序的开机启动功能(类似mac)
 
+#### 网络 netplan
+```
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp3s0:
+      addresses:
+        - 10.10.10.2/24
+      gateway4: 10.10.10.1
+      nameservers:
+          search: [mydomain, otherdomain]
+          addresses: [10.10.10.1, 1.1.1.1]
+```
+
+
+
+
 
 
