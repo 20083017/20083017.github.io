@@ -52,6 +52,19 @@ settings.json 配置
 "makefile.compileCommandsPath":".vscode/compile_commands.json"
 ```
 
+### clangd server安装
+
+### clangd 插件配置
+```
+–compile-commands-dir=${workspaceFolder}
+–background-index
+–completion-style=detailed
+–header-insertion=never
+-log=info
+```
+clangd 工具绝对路径
+![image](https://github.com/user-attachments/assets/1d63a602-343c-435a-a9ea-193aa9335bdc)
+
 
 ### lldb 配置
 ```
