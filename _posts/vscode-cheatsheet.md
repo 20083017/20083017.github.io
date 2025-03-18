@@ -62,7 +62,8 @@ settings.json 配置
 –header-insertion=never
 -log=info
 ```
-clangd 工具绝对路径
+clangd 工具绝对路径   
+
 ![image](https://github.com/user-attachments/assets/1d63a602-343c-435a-a9ea-193aa9335bdc)
 
 
