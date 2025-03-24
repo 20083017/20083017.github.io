@@ -49,6 +49,9 @@ VCEI exceptions         : not available
 
 # 常用操作
 
+#### grep
+grep -aiI 'recv packet' *.log*   避免将文件输出为二进制 -a   
+
 #### mount
 mount 好像会自动mount。。   
 umount -l /dev/mmcblk0p1  强制umount   
