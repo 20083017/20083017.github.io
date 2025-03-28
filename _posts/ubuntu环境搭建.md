@@ -63,6 +63,7 @@ deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted univer
 EOF"
 ```
 
+换源完成之后，生效命令  sudo apt update！！！   
 
 #### python pip安装升级
 
@@ -103,6 +104,11 @@ network:
 
 ##### 其他netplan配置 
    如1个网卡多个ip等
+
+#### curl net-tools vim
+
+#### root 账号
+sudo passwd root
 
 
 
