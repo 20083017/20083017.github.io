@@ -7,3 +7,21 @@ New-Item -ItemType SymbolicLink `
 		 -Target C:\ProgramData\scoop\apps\neovim\current\bin\nvim.exe
 
 ```
+
+### vcpkg 安装
+
+gitkraken
+
+nodejs
+
+git
+
+cmake
+
+ninja
+
+### vcpkg 配置
+
+
+
+
