@@ -2,6 +2,7 @@
 
 set(CMAKE_TOOLCHAIN_FILE "D:/project/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
+### boost 库
+设置环境变量
 
-set(Boost_INCLUDE_DIR [vcpkg安装路径]/installed/x64-windows/include)
-set(Boost_LIBRARY_DIR [vcpkg安装路径]/installed/x64-windows/lib)
+D:\project\vcpkg\installed\x64-windows
