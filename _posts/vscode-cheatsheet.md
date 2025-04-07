@@ -126,7 +126,8 @@ sudo apt install liblldb-15-dev
 
 
 
-
+### 管理员身份运行
+code --user-data-dir="."
 
 
 
