@@ -417,7 +417,10 @@ source ~/.bashrc
 ### vmware 虚拟机 network unplugable
 虚拟网络编辑器 重置  
 
-
+### 多线程 grep
+```
+ find . -type f | xargs -P 4 grep -i tidyup --col
+```
 
 
 
