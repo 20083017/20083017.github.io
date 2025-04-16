@@ -424,7 +424,7 @@ source ~/.bashrc
 
 #### sudo：/usr/bin/sudo 必须属于用户 ID 0(的用户)并且设置 setuid 位
 
-如何进入recovery mode， 在适当的时机，长按 shift + f11 shift + f10 shift+ f12？！！！  也有说 多点 esc的，碰到的是前边这个
+如何进入recovery mode， 在适当的时机，长按 hp shift + f11(grub) shift + f10 shift+ f12(network boot)？！！！  也有说 多点 esc的，碰到的是前边这个
 ```
 
 一、前言
