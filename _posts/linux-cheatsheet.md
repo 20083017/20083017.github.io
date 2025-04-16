@@ -422,5 +422,52 @@ source ~/.bashrc
  find . -type f | xargs -P 4 grep -i tidyup --col
 ```
 
+#### sudo：/usr/bin/sudo 必须属于用户 ID 0(的用户)并且设置 setuid 位
+
+如何进入recovery mode， 在适当的时机，长按 shift？！！！  也有说 多点 esc的，碰到的是前边这个
+```
+
+一、前言
+这是一个神奇的错误，缘由是因为有人将/usr/bin/sudo的权限改为777或其他。
+
+解决办法：最终目的只有一个，想办法执行chmod 4755     /usr/bin/sudo 和 chmod 755 /usr 语句
+
+二、解决办法
+1.如果知道root密码。
+
+su登录root用户，执行命令chmod 4755     /usr/bin/sudo    执行命令chmod 755 /usr
+
+2.不知道root密码。
+
+重启机器，ubuntu下按esc或shift，进入recovery模式(即单人模式)，进入后选择root选项，有的会提示输入root密码。
+
+(1).不需要输入root密码的情况下，执行如下两条命令。
+
+chmod 4755     /usr/bin/sudo 
+
+chmod 755 /usr
+
+(2)需要输入root密码的难兄难弟们，请往下看。
+
+重启的时候，进入ubuntu高级选项(有的系统是英文的，自己翻译，大概是Advanced options for ubuntu这样)，之后能看到recovery 啥啥啥的，按e进入，找到linux /boot/vmlinuz-----\*** ro recovery nomodestset 这句话。
+
+然后将ro recovery nomodestset啥啥啥一大串修改为 rw single init=/bin/bash，然后ctrl+x进入单人模式。
+
+(此时，想要更改root密码的输入passwd <密码>，之后再确认一次就更改成功了。)执行如下命令。
+
+chmod 755 /usr
+
+chmod 4755   /usr/bin/sudo 
+
+然后重启查看。
+
+三、题外
+如果重启之后，提示sudo：在加载插件“sudoers_policy”时在 /etc/sudo.conf 第 0 行出错。
+
+必须用root登录(如果不知道密码，用第2点第2条进行重置root密码），卸载sudo并重装就可以了。
+
+ubuntu命令如下：apt-get remove sudo 执行apt-get install sudo。
+```
+
 
 
