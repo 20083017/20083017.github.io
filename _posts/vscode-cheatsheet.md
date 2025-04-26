@@ -129,6 +129,24 @@ sudo apt install liblldb-15-dev
 ### 管理员身份运行
 code --user-data-dir="."
 
+### 关闭cmaketools插件，自动识别cmakelists.txt 变化
+
+### 配置.vscode/settings.json
+
+```
+{
+    "clangd.arguments":[
+         "--compile-commands-dir=/home/build/build",
+         "--background-index",
+         "--completion-style=detailed",
+         "--header-insertion=never",
+         "--log=info",
+          "--query-driver=/usr/bin/clang++,/usr/bin/**/clang-*,/bin/clang,/bin/clang++,/usr/bin/gcc,/usr/bin/g++,/opt/petalinux/2019.2/sysroots/x86_64-petalinux-linux/usr/bin/arm-xilinx-linux/arm-xilinx-linux-gcc,/opt/petalinux/2019.2/sysroots/x86_64-petalinux-linux/usr/bin/arm-xilinx-linux/arm-xilinx-linux-g++,/opt/petalinux/2021.2/sysroots/x86_64-petalinux-linux/usr/bin/aarch64-xilinx-linux/aarch64-xilinx-linux-gcc,/opt/petalinux/2021.2/sysroots/x86_64-petalinux-linux/usr/bin/aarch64-xilinx-linux/aarch64-xilinx-linux-g++",
+     ]
+}
+```
+
+### 配置 cache ？ 提高 索引跳转效率，不跳转？！！！
 
 
 
