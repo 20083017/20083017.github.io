@@ -422,7 +422,12 @@ source ~/.bashrc
 
 ### 多线程 grep
 ```
- find . -type f | xargs -P 4 grep -i tidyup --col
+ find . -type f -regextype posix-extended \
+  -regex '.*/[0-9]{6}\..*' \
+  -printf "%p\n" | \
+  awk -F/ '{n=substr($3,1,6); print n " " $0}' | \
+  sort -k1,1 | \
+  cut -d' ' -f2- | xargs -P 4 grep -i -E 'ArmMoveObjsTo|ArmGraspObject|ArmHelper|ArmController' --color
 ```
 
 #### sudo：/usr/bin/sudo 必须属于用户 ID 0(的用户)并且设置 setuid 位
