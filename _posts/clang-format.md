@@ -243,4 +243,128 @@ TabWidth: 4
 "clang-format.fallbackStyle":"file",
 ```
 
+```
+# jemalloc targets clang-format version 8.  We include every option it supports
+# here, but comment out the ones that aren't relevant for us.
+---
+# AccessModifierOffset: -2
+AlignAfterOpenBracket: DontAlign
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Right
+AlignOperands: false
+AlignTrailingComments: false
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakAfterReturnType: AllDefinitions
+AlwaysBreakBeforeMultilineStrings: true
+# AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: true
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: true
+# BreakAfterJavaFieldAnnotations: true
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Allman  
+BreakBeforeTernaryOperators: true
+# BreakConstructorInitializers: BeforeColon
+# BreakInheritanceList: BeforeColon
+BreakStringLiterals: false
+ColumnLimit: 120
+# CommentPragmas: ''
+# CompactNamespaces: true
+# ConstructorInitializerAllOnOneLineOrOnePerLine: true
+# ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+DerivePointerAlignment: false
+DisableFormat:   false
+ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: true
+ForEachMacros:   [ ql_foreach, qr_foreach, ]
+# IncludeBlocks: Preserve
+# IncludeCategories:
+#   - Regex:           '^<.*\.h(pp)?>'
+#     Priority:        1
+# IncludeIsMainRegex: ''
+IndentCaseLabels: false
+IndentPPDirectives: AfterHash
+IndentWidth: 4
+IndentWrappedFunctionNames: false
+# JavaImportGroups: []
+# JavaScriptQuotes: Leave
+# JavaScriptWrapImports: True
+KeepEmptyLinesAtTheStartOfBlocks: false
+Language: Cpp
+MacroBlockBegin: ''
+MacroBlockEnd: ''
+MaxEmptyLinesToKeep: 1
+# NamespaceIndentation: None
+# ObjCBinPackProtocolList: Auto
+# ObjCBlockIndentWidth: 2
+# ObjCSpaceAfterProperty: false
+# ObjCSpaceBeforeProtocolList: false
 
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+# PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 60
+PointerAlignment: Right
+# RawStringFormats:
+#   - Language: TextProto
+#       Delimiters:
+#         - 'pb'
+#         - 'proto'
+#       EnclosingFunctions:
+#         - 'PARSE_TEXT_PROTO'
+#       BasedOnStyle: google
+#   - Language: Cpp
+#       Delimiters:
+#         - 'cc'
+#         - 'cpp'
+#       BasedOnStyle: llvm
+#       CanonicalDelimiter: 'cc'
+ReflowComments: true
+SortIncludes: false
+SpaceAfterCStyleCast: false
+# SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+# SpaceBeforeCpp11BracedList: false
+# SpaceBeforeCtorInitializerColon: true
+# SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+# SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles:  false
+SpacesInCStyleCastParentheses: false
+# SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+# Standard: Cpp11
+# This is nominally supported in clang-format version 8, but not in the build
+# used by some of the core jemalloc developers.
+# StatementMacros: []
+TabWidth: 4
+UseTab: Never
+...
+
+```
