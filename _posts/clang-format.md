@@ -244,7 +244,9 @@ TabWidth: 4
  "editor.formatOnSave": true,
 ```
 ### 配置检查
+```
  clang-format --dump-config
+```
 
 
 ```
