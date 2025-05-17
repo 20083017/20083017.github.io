@@ -243,6 +243,9 @@ TabWidth: 4
 "clang-format.fallbackStyle":"file",
  "editor.formatOnSave": true,
 ```
+### 配置检查
+ clang-format --dump-config
+
 
 ```
 # jemalloc targets clang-format version 8.  We include every option it supports
