@@ -241,6 +241,7 @@ TabWidth: 4
 
 ```
 "clang-format.fallbackStyle":"file",
+ "editor.formatOnSave": true,
 ```
 
 ```
