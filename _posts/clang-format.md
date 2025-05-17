@@ -301,6 +301,16 @@ ForEachMacros:   [ ql_foreach, qr_foreach, ]
 #   - Regex:           '^<.*\.h(pp)?>'
 #     Priority:        1
 # IncludeIsMainRegex: ''
+
+ #   可以定义负数优先级从而保证某些#include永远在最前面
+ IncludeCategories: 
+   - Regex:'^"(llvm|llvm-c|clang|clang-c)/'
+    Priority:2
+   - Regex:'^(<|"(gtest|isl|json)/)'
+    Priority:3
+   - Regex:'.*'
+    Priority:1
+
 IndentCaseLabels: false
 IndentPPDirectives: AfterHash
 IndentWidth: 4
