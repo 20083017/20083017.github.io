@@ -249,5 +249,121 @@ code --user-data-dir="."
 "lldb.verboseLogging": true,
 ```
 
+### settings.json
 
+```
+{
+  "editor.smoothScrolling": true,
+  "editor.cursorBlinking": "expand",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.hover.above": false,
+  "workbench.list.smoothScrolling": true,
+  "editor.mouseWheelZoom": true,
+  "editor.wordWrap": "on",
+  "editor.lineHeight": 1.5,
+  "editor.fontSize": 11,
+  "editor.fontFamily": "Consolas, '等线', monospace",
+  "editor.fastScrollSensitivity": 10,
+  "editor.guides.bracketPairs": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+  "editor.acceptSuggestionOnEnter": "smart",
+  "editor.suggestSelection": "recentlyUsedByPrefix",
+  "editor.suggest.insertMode": "replace",
+  // 禁止中文黄框高亮
+  "editor.unicodeHighlight.nonBasicASCII": false,
+  // 补全括号选择
+  "editor.autoClosingBrackets": "beforeWhitespace",
+  "editor.autoClosingDelete": "always",
+  "editor.autoClosingOvertype": "always",
+  "editor.autoClosingQuotes": "beforeWhitespace",
+  // 禁用缩进猜测
+  "editor.detectIndentation": false,
+  "editor.tabSize": 4,
+  "editor.suggest.preview": true,
+
+      // 代码格式化配置
+    // "editor.formatOnSave": true,
+    // "editor.defaultFormatter": "xaver.clang-format",  // 使用Clang-Format
+    // "clang-format.style": "file",  // 遵循项目.clang-format文件
+    // "clang-format.fallbackStyle": "LLVM",
+
+    // 构建系统集成
+    // "cmake.configureOnOpen": true,
+    "cmake.generator": "Ninja",  // 推荐与Clang配合使用
+
+    // 增强开发体验
+    "files.autoSave": "onWindowChange",  // 自动保存
+    "search.followSymlinks": false,  // 避免索引系统头文件
+  "window.dialogStyle": "custom",
+  // Tab 高度紧凑模式
+  "window.density.editorTabHeight": "compact",
+  "debug.showBreakpointsInOverviewRuler": true,
+  // 文件夹紧凑模式
+  "explorer.compactFolders": true,
+  "notebook.compactView": true,
+  // 自动补齐`HTML`尖括号
+  "editor.linkedEditing": true,
+  "html.format.wrapAttributes": "preserve",
+  "html.format.wrapLineLength": 80,
+  // "editor.rulers": [80],
+  "html.format.indentHandlebars": true,
+
+  "files.autoGuessEncoding": true,
+  // 保存自动删除末尾空格
+  "files.trimTrailingWhitespace": true,
+  // 搜索吸附目录
+  "search.searchEditor.singleClickBehaviour": "peekDefinition",
+  "editor.stickyScroll.enabled": true,
+  "workbench.tree.enableStickyScroll": true,
+
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.list.fastScrollSensitivity": 10,
+  "workbench.colorTheme": "Pretty Dark Theme",
+  "workbench.activityBar.location": "bottom",
+  "editor.foldingImportsByDefault": true,
+
+  "workbench.startupEditor": "none",
+  // 行内样式代码补全
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+  "liveServer.settings.donotShowInfoMsg": true,
+  "editor.wordSeparators": "`~!@%^&*()=+[{]}\\|;:'\",.<>/?（），。；：",
+  "editor.minimap.enabled": false,
+  "editor.foldingStrategy": "indentation",
+  "liveServer.settings.donotVerifyTags": true,
+  "update.mode": "manual",
+  "search.exclude": {
+    "**/build":true,
+    "**/build/**":true,
+    "**/.*":true,
+    "**/.*/**":true,
+    "**/.vscode":true,
+    "**/.vscode/**":true,
+  },
+  // 大纲
+  "notebook.outline.showCodeCellSymbols": false,
+  "outline.showArrays": false,
+  "outline.showBooleans": false,
+  "outline.showConstants": false,
+  "outline.showNull": false,
+  "outline.showNumbers": false,
+  "outline.showObjects": false,
+  "outline.showOperators": false,
+  "outline.showPackages": false,
+  "outline.showStructs": false,
+  "outline.showEvents": false,
+  "outline.showFields": false,
+  "outline.showFiles": false,
+  "outline.showProperties": false,
+  "outline.showEnumMembers": false,
+  "outline.showEnums": false,
+  "outline.showInterfaces": false,
+  "outline.showKeys": false,
+  "outline.showTypeParameters": false,
+}
+```
 
