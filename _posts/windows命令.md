@@ -8,6 +8,11 @@ New-Item -ItemType SymbolicLink `
 
 ```
 
+### 重启powershell 生效环境变量
+```
+Start-Process powershell -ArgumentList "-NoExit"
+```
+
 ### vcpkg 安装
 
 gitkraken
