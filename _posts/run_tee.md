@@ -167,81 +167,83 @@ setup_clean_environment() {
 setup_clean_environment
 
 # ---------- 6. 构建主系统 ----------
-log "开始构建 OP-TEE 系统"
+log "开始分步构建 OP-TEE 系统"
 make -j$(nproc) all || error "主系统构建失败"
+#make -j$(nproc) qemu          || error "QEMU 构建失败"
+#make -j$(nproc) linux         || error "Linux 内核构建失败"
+#make -j$(nproc) optee-os      || error "OP-TEE OS 构建失败"
+#make -j$(nproc) optee-client-ext  || error "OP-TEE Client 构建失败"
 
-# ---------- 7. 完成 ----------
-# ---------- 6. 构建主系统 ----------
-log "开始构建 OP-TEE 系统"
-make -j$(nproc) all || error "主系统构建失败"
+# 关键：使用 optee-test-ext
+#make -j$(nproc) optee-test-ext || error "OP-TEE Test (ext) 构建失败"
+#make -j$(nproc) rootfs        || error "RootFS 构建失败"
+#make                          || error "最终整合失败"
+
 success "🎉 构建成功！"
 
-# ---------- 7. 启动 QEMU ----------
+# ---------- 7. 检查 xtest 是否生成 ----------
+check_xtest() {
+    local XTEST_BIN="$WORK_DIR/optee_test/out/xtest/xtest"
+    if [ ! -f "$XTEST_BIN" ]; then
+        error "xtest 未生成: $XTEST_BIN
+
+请检查构建日志。常见原因：
+  - build/conf/buildroot_config 中 BR2_PACKAGE_OPTEE_TEST_EXT=y
+  - br-ext/package/optee_test_ext/ 存在
+  - 已运行 make optee-test-ext"
+    fi
+    success "xtest 已就绪: $XTEST_BIN"
+}
+
+#check_xtest
+
+# ---------- 8. 启动 QEMU ----------
 launch_qemu() {
     log "启动 QEMU 模拟器"
-
-    # 进入 build 目录
-    cd "$BUILD_DIR" || error "无法进入 $BUILD_DIR"
-
-    # 后台启动 QEMU（避免阻塞）
     make run > qemu.log 2>&1 &
     QEMU_PID=$!
+    sleep 8
 
-    log "QEMU 已启动 (PID: $QEMU_PID)，日志保存在 qemu.log"
-    sleep 8  # 等待系统启动
-
-    # 检查是否启动成功
     if ! kill -0 $QEMU_PID 2>/dev/null; then
         error "QEMU 启动失败，请查看 qemu.log"
     fi
-
-    success "QEMU 运行中..."
+    success "QEMU 运行中 (PID: $QEMU_PID)"
     echo "
-📌 提示：
-  - 登录：root（无密码）
-  - 退出 QEMU：按 Ctrl+A，然后按 X
-  - 查看日志：tail -f qemu.log
+📌 登录：root（无密码）
+📌 退出 QEMU：Ctrl+A, X
+📌 查看日志：tail -f qemu.log
 "
 }
 
-# ---------- 8. 运行 xtest 测试 ----------
-run_xtest() {
-    log "准备运行 xtest 测试套件"
-
-    # 检查 xtest 是否已构建
-    if [ ! -f "$WORK_DIR/optee_test/out/xtest/xtest" ]; then
-        error "xtest 未找到，请确认 optee-test 构建成功"
-    fi
-
-    # 提示用户手动运行 xtest（因为需要交互）
+# ---------- 9. 提示运行测试 ----------
+run_xtest_hint() {
     echo "
-📌 请在 QEMU 终端中执行以下命令运行测试：
+📌 请在 QEMU 终端中运行测试：
 
     /optee_test/run_xtest.sh
 
-📌 或手动运行：
-
+📌 或直接运行：
     xtest
 
 📌 常见测试：
-    xtest 1000    # 基础功能测试
-    xtest 2000    # 加密测试
-    xtest 3000    # 存储测试
+    xtest 1000    # TEE Core
+    xtest 2001    # Crypto
+    xtest 3010    # Secure Storage
 "
 }
 
-# ---------- 9. 询问是否启动 QEMU ----------
+# ---------- 10. 询问是否启动 ----------
 ask_to_launch() {
     echo
     read -p "是否启动 QEMU 并运行测试? [y/N] " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         launch_qemu
-        run_xtest
+        run_xtest_hint
     else
         success "构建完成，未启动 QEMU"
         echo "
-📌 启动手动命令：
+📌 手动启动：
   cd $BUILD_DIR && make run
 
 📌 运行测试：
