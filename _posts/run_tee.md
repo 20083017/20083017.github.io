@@ -381,6 +381,26 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
     fi
 fi
 
+
+# ---------- 6. 初始化仓库 ----------
+log "初始化 OP-TEE 仓库 (release $OPTEE_RELEASE)"
+
+cd "$WORK_DIR" || error "无法进入工作目录: $WORK_DIR"
+
+if [ ! -d ".repo" ]; then
+    info "首次初始化 repo 仓库..."
+    repo init -u "$MANIFEST_URL" -m "$MANIFEST_FILE" -b "$OPTEE_RELEASE" || error "repo init 失败"
+    
+    info "同步源码（可能需要几分钟）..."
+    repo sync -c --no-tags --no-clone-bundle -j"$JOBS" || {
+        warn "同步失败，尝试单线程重试..."
+        repo sync -c --no-tags --no-clone-bundle -j1 || error "repo sync 失败"
+    }
+    success "源码同步完成"
+else
+    success "仓库已存在，跳过 repo init/sync"
+fi
+
 # ---------- 3. 自动处理 multiarch 头文件 ----------
 fix_multiarch_headers() {
     local arch_dir="/usr/include/x86_64-linux-gnu"
@@ -465,24 +485,6 @@ setup_clean_environment() {
 
 setup_clean_environment
 
-# ---------- 6. 初始化仓库 ----------
-log "初始化 OP-TEE 仓库 (release $OPTEE_RELEASE)"
-
-cd "$WORK_DIR" || error "无法进入工作目录: $WORK_DIR"
-
-if [ ! -d ".repo" ]; then
-    info "首次初始化 repo 仓库..."
-    repo init -u "$MANIFEST_URL" -m "$MANIFEST_FILE" -b "$OPTEE_RELEASE" || error "repo init 失败"
-    
-    info "同步源码（可能需要几分钟）..."
-    repo sync -c --no-tags --no-clone-bundle -j"$JOBS" || {
-        warn "同步失败，尝试单线程重试..."
-        repo sync -c --no-tags --no-clone-bundle -j1 || error "repo sync 失败"
-    }
-    success "源码同步完成"
-else
-    success "仓库已存在，跳过 repo init/sync"
-fi
 
 # ---------- 7. 构建主系统 ----------
 log "开始构建 OP-TEE 系统"
