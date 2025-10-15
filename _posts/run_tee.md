@@ -262,12 +262,13 @@ ask_to_launch
 #!/bin/bash
 
 # =====================================================
-# OP-TEE 智能构建脚本（完整版）
+# OP-TEE 智能构建脚本（修复完整版）
 # 功能：
 #   - 自动安装缺失依赖
 #   - 自动处理 multiarch 头文件路径（gmp.h, mpfr.h, mpc.h）
 #   - 智能判断是否需要清理 toolchains
 #   - 支持增量构建
+#   - 修复 repo 下载问题
 # 用法：
 #   chmod +x smart_build_optee.sh
 #   ./smart_build_optee.sh
@@ -281,6 +282,15 @@ BUILD_DIR="$WORK_DIR/build"
 TOOLCHAINS_DIR="$WORK_DIR/toolchains"
 AARCH64_GCC="$TOOLCHAINS_DIR/aarch64/bin/aarch64-linux-gnu-gcc"
 AARCH32_GCC="$TOOLCHAINS_DIR/arm/bin/arm-linux-gnueabihf-gcc"
+
+# 🔧 修复：定义 repo 和 manifest 相关变量
+OPTEE_RELEASE="3.20.0"                         # 可改为 latest 或具体版本
+MANIFEST_URL="https://github.com/OP-TEE/manifest.git"
+MANIFEST_FILE="default.xml"
+JOBS=$(nproc)                                  # 并行任务数
+
+# 🔧 repo 官方下载地址（HTTPS）
+REPO_URL="https://storage.googleapis.com/git-repo-downloads/repo"
 
 # 关键依赖列表
 DEPS=("libgmp-dev" "libmpfr-dev" "libmpc-dev" "ninja-build" "rsync" "python3-pip" "bison" "flex" "libssl-dev")
@@ -299,51 +309,50 @@ success() {
     echo -e "\n✅ $1"
 }
 
+# 🔧 修复：定义 info 和 warn 函数
+info() {
+    echo -e "\n💡 $1"
+}
+
+warn() {
+    echo -e "\n⚠️  $1"
+}
+
 # ---------- 修复 repo 工具 ----------
+log "安装或更新 repo 工具"
+
 mkdir -p ~/bin
+export PATH=~/bin:$PATH
+
 if ! command -v repo >/dev/null 2>&1; then
-    info "Downloading 'repo' tool..."
-    curl -L $REPO_URL -o ~/bin/repo || {
+    info "Downloading 'repo' tool from $REPO_URL..."
+    if curl -L --fail "$REPO_URL" -o ~/bin/repo; then
+        chmod +x ~/bin/repo
+        success "repo 工具下载成功"
+    else
         warn "Primary URL failed, trying backup mirror..."
-        curl -L https://storage.googleapis.com/git-repo-downloads/repo -o ~/bin/repo
-    }
-    chmod +x ~/bin/repo
-    echo 'export PATH=~/bin:$PATH' >> ~/.bashrc
-    export PATH=~/bin:$PATH
+        if curl -L --fail https://storage.googleapis.com/git-repo-downloads/repo -o ~/bin/repo; then
+            chmod +x ~/bin/repo
+            success "repo 工具从备用镜像下载成功"
+        else
+            error "Failed to download 'repo'. Please check your network or try manually:"
+            echo "  curl -L https://storage.googleapis.com/git-repo-downloads/repo -o ~/bin/repo"
+            echo "  chmod +x ~/bin/repo"
+            exit 1
+        fi
+    fi
+else
+    info "repo 已安装: $(repo --version)"
 fi
-
-if ! command -v repo >/dev/null 2>&1; then
-    error "Failed to install 'repo'. Please check your network."
-    exit 1
-fi
-
-info "Repo installed successfully: $(repo --version)"
 
 # ---------- 初始化工作目录 ----------
+log "初始化工作目录"
 mkdir -p "$WORK_DIR"
 cd "$WORK_DIR"
 
-info "Initializing OP-TEE repo manifest (release $OPTEE_RELEASE)..."
-repo init -u $MANIFEST_URL -m $MANIFEST_FILE -b $OPTEE_RELEASE
-
-info "Syncing sources (this may take several minutes)..."
-repo sync -c --no-tags --no-clone-bundle -j$JOBS || {
-    warn "Sync failed — retrying with single thread..."
-    repo sync -c --no-tags --no-clone-bundle -j1
-}
-
-# ---------- 1. 检查工作目录 ----------
-log "检查工作目录"
-if [ ! -d "$WORK_DIR" ]; then
-    error "工作目录 $WORK_DIR 不存在，请先初始化仓库"
-fi
-
-cd "$WORK_DIR"
-
-# ---------- 2. 检查并安装依赖 ----------
+# ---------- 检查并安装依赖 ----------
 log "检查系统依赖"
 
-echo "👉 步骤 2: 安装系统依赖"
 sudo apt update
 sudo apt install -y git make gcc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf \
     libc6-dev libc6-dev-arm64-cross libc6-dev-armhf-cross \
@@ -456,22 +465,33 @@ setup_clean_environment() {
 
 setup_clean_environment
 
-# ---------- 6. 构建主系统 ----------
-log "开始分步构建 OP-TEE 系统"
+# ---------- 6. 初始化仓库 ----------
+log "初始化 OP-TEE 仓库 (release $OPTEE_RELEASE)"
+
+cd "$WORK_DIR" || error "无法进入工作目录: $WORK_DIR"
+
+if [ ! -d ".repo" ]; then
+    info "首次初始化 repo 仓库..."
+    repo init -u "$MANIFEST_URL" -m "$MANIFEST_FILE" -b "$OPTEE_RELEASE" || error "repo init 失败"
+    
+    info "同步源码（可能需要几分钟）..."
+    repo sync -c --no-tags --no-clone-bundle -j"$JOBS" || {
+        warn "同步失败，尝试单线程重试..."
+        repo sync -c --no-tags --no-clone-bundle -j1 || error "repo sync 失败"
+    }
+    success "源码同步完成"
+else
+    success "仓库已存在，跳过 repo init/sync"
+fi
+
+# ---------- 7. 构建主系统 ----------
+log "开始构建 OP-TEE 系统"
+cd "$BUILD_DIR" || error "无法进入构建目录"
+
 make -j$(nproc) all || error "主系统构建失败"
-#make -j$(nproc) qemu          || error "QEMU 构建失败"
-#make -j$(nproc) linux         || error "Linux 内核构建失败"
-#make -j$(nproc) optee-os      || error "OP-TEE OS 构建失败"
-#make -j$(nproc) optee-client-ext  || error "OP-TEE Client 构建失败"
-
-# 关键：使用 optee-test-ext
-#make -j$(nproc) optee-test-ext || error "OP-TEE Test (ext) 构建失败"
-#make -j$(nproc) rootfs        || error "RootFS 构建失败"
-#make                          || error "最终整合失败"
-
 success "🎉 构建成功！"
 
-# ---------- 7. 检查 xtest 是否生成 ----------
+# ---------- 8. 检查 xtest 是否生成 ----------
 check_xtest() {
     local XTEST_BIN="$WORK_DIR/optee_test/out/xtest/xtest"
     if [ ! -f "$XTEST_BIN" ]; then
@@ -485,9 +505,9 @@ check_xtest() {
     success "xtest 已就绪: $XTEST_BIN"
 }
 
-#check_xtest
+check_xtest
 
-# ---------- 8. 启动 QEMU ----------
+# ---------- 9. 启动 QEMU ----------
 launch_qemu() {
     log "启动 QEMU 模拟器"
     make run > qemu.log 2>&1 &
@@ -505,7 +525,7 @@ launch_qemu() {
 "
 }
 
-# ---------- 9. 提示运行测试 ----------
+# ---------- 10. 提示运行测试 ----------
 run_xtest_hint() {
     echo "
 📌 请在 QEMU 终端中运行测试：
@@ -522,7 +542,7 @@ run_xtest_hint() {
 "
 }
 
-# ---------- 10. 询问是否启动 ----------
+# ---------- 询问是否启动 ----------
 ask_to_launch() {
     echo
     read -p "是否启动 QEMU 并运行测试? [y/N] " -n 1 -r
