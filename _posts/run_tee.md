@@ -324,23 +324,16 @@ log "安装或更新 repo 工具"
 mkdir -p ~/bin
 export PATH=~/bin:$PATH
 
+info "Installing or repairing Repo tool..."
 if ! command -v repo >/dev/null 2>&1; then
-    info "Downloading 'repo' tool from $REPO_URL..."
-    if curl -L --fail "$REPO_URL" -o ~/bin/repo; then
-        chmod +x ~/bin/repo
-        success "repo 工具下载成功"
-    else
-        warn "Primary URL failed, trying backup mirror..."
-        if curl -L --fail https://storage.googleapis.com/git-repo-downloads/repo -o ~/bin/repo; then
-            chmod +x ~/bin/repo
-            success "repo 工具从备用镜像下载成功"
-        else
-            error "Failed to download 'repo'. Please check your network or try manually:"
-            echo "  curl -L https://storage.googleapis.com/git-repo-downloads/repo -o ~/bin/repo"
-            echo "  chmod +x ~/bin/repo"
-            exit 1
-        fi
-    fi
+  mkdir -p ~/.local/bin
+  cd ~/.local/bin
+  git clone https://github.com/GerritCodeReview/git-repo.git repo-tmp
+  cp repo-tmp/repo repo
+  chmod +x repo
+  rm -rf repo-tmp
+  export PATH="$HOME/.local/bin:$PATH"
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 else
     info "repo 已安装: $(repo --version)"
 fi
