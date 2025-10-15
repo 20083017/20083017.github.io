@@ -1,4 +1,416 @@
 
+```
+#!/bin/bash
+
+# =====================================================
+# 🛠️ OP-TEE 智能构建脚本（最终完整版）
+# 💡 功能亮点：
+#   - 自动安装 repo 工具（官方源）
+#   - 防止重复初始化 repo
+#   - 智能同步源码（支持断点续传）
+#   - 自动修复 multiarch 头文件路径问题
+#   - 检测 toolchains 状态，按需重建
+#   - WSL 环境 PATH 净化
+#   - 支持增量构建与重试机制
+#   - 详细的 debug 输出与错误提示
+#
+# 📦 依赖：Ubuntu/Debian 系统（推荐 20.04+）
+# 🔧 版本：OP-TEE v3.20.0
+#
+# 🚀 使用方法：
+#   chmod +x smart_build_optee.sh
+#   ./smart_build_optee.sh
+# =====================================================
+
+set -euo pipefail  # 严格模式：遇错停止 + 未定义变量报错 + 管道失败捕获
+
+# =====================================================
+# 🔧 配置区（可修改）
+# =====================================================
+WORK_DIR="$HOME/optee"                    # 主工作目录
+BUILD_DIR="$WORK_DIR/build"               # 构建目录
+TOOLCHAINS_DIR="$WORK_DIR/toolchains"     # 交叉编译工具链目录
+AARCH64_GCC="$TOOLCHAINS_DIR/aarch64/bin/aarch64-linux-gnu-gcc"
+AARCH32_GCC="$TOOLCHAINS_DIR/arm/bin/arm-linux-gnueabihf-gcc"
+
+OPTEE_RELEASE="3.20.0"                   # 可改为 latest 或具体标签
+MANIFEST_URL="https://github.com/OP-TEE/manifest.git"
+MANIFEST_FILE="default.xml"
+JOBS=$(nproc)                            # 并行任务数
+
+REPO_URL="https://github.com/GerritCodeReview/git-repo/raw/main/repo"
+REPO_DIR="$HOME/.bin"
+REPO_PATH="$REPO_DIR/repo"
+
+# 关键开发依赖包
+DEPS=("libgmp-dev" "libmpfr-dev" "libmpc-dev" "ninja-build" "rsync"
+      "python3-pip" "bison" "flex" "libssl-dev" "libglib2.0-dev"
+      "libfdt-dev" "libpixman-1-dev" "zlib1g-dev")
+
+# =====================================================
+# 📝 工具函数：日志与错误处理
+# =====================================================
+log() {
+    echo -e "\n👉 $*"
+}
+
+info() {
+    echo -e "\n💡 INFO: $*"
+}
+
+warn() {
+    echo -e "\n⚠️  WARN: $*"
+}
+
+success() {
+    echo -e "\n✅ SUCCESS: $*"
+}
+
+error() {
+    echo -e "\n❌ ERROR: $*" >&2
+    exit 1
+}
+
+debug() {
+    [[ "${DEBUG:-0}" == "1" ]] && echo -e "\n🔍 DEBUG: $*"
+}
+
+# =====================================================
+# 🔍 环境检测函数
+# =====================================================
+check_system_info() {
+    log "系统信息检查"
+    debug "Shell: $SHELL"
+    debug "User: $(whoami)"
+    debug "Home: $HOME"
+    debug "OS: $(uname -srm)"
+    if command -v lsb_release >/dev/null; then
+        debug "Distro: $(lsb_release -ds)"
+    fi
+    if grep -qi microsoft /proc/version 2>/dev/null || [ -n "${WSL_DISTRO_NAME:-}" ]; then
+        info "检测到 WSL 环境"
+        export ON_WSL=1
+    fi
+}
+
+# =====================================================
+# 🔧 安装或更新 repo 工具（唯一入口）
+# =====================================================
+setup_repo_tool() {
+    log "🔧 安装/更新 repo 工具"
+
+    mkdir -p "$REPO_DIR"
+    export PATH="$REPO_DIR:$PATH"
+
+    # 永久添加到 .bashrc（避免多次添加）
+    if ! grep -q "export PATH=.*$REPO_DIR" ~/.bashrc; then
+        echo "export PATH=\"$REPO_DIR:\$PATH\"" >> ~/.bashrc
+        info "已将 \$REPO_DIR 添加到 ~/.bashrc"
+    fi
+
+    if command -v repo &>/dev/null; then
+        local version=$(repo --version | head -n1)
+        success "repo 已安装: $version"
+        return 0
+    fi
+
+    info "正在从 GitHub 下载 repo 工具..."
+    if curl -L --retry 3 -f -o "$REPO_PATH" "$REPO_URL"; then
+        chmod a+rx "$REPO_PATH"
+        success "repo 工具已安装至: $REPO_PATH"
+    else
+        error "下载 repo 失败，请检查网络连接或手动安装"
+    fi
+}
+
+# =====================================================
+# 🌐 初始化并同步 OP-TEE 源码（只执行一次）
+# =====================================================
+init_and_sync_repo() {
+    log "📦 初始化 OP-TEE 源码仓库 (版本: $OPTEE_RELEASE)"
+
+    cd "$WORK_DIR" || error "无法进入工作目录: $WORK_DIR"
+    debug "当前路径: $(pwd)"
+
+    # 检查并清理损坏的 .repo 目录
+    if [ -d ".repo" ]; then
+        if [ ! -f ".repo/manifest.xml" ] || [ ! -d ".repo/projects" ]; then
+            warn ".repo 目录不完整或损坏，正在清理..."
+            rm -rf .repo
+        else
+            success "✅ 源码仓库已存在，跳过 repo init/sync"
+            return 0
+        fi
+    fi
+
+    # 执行唯一一次 repo init
+    info "首次初始化 repo 仓库..."
+    debug "repo init -u $MANIFEST_URL -m $MANIFEST_FILE -b $OPTEE_RELEASE"
+    if ! repo init -u "$MANIFEST_URL" -m "$MANIFEST_FILE" -b "$OPTEE_RELEASE"; then
+        error "repo init 失败。请确认：\n  - 网络是否通畅\n  - 版本 '$OPTEE_RELEASE' 是否存在"
+    fi
+
+    # 同步源码
+    info "开始同步源码（可能需要 10~30 分钟，取决于网速）..."
+    debug "repo sync -c --no-tags --no-clone-bundle -j$JOBS"
+    if ! repo sync -c --no-tags --no-clone-bundle -j"$JOBS"; then
+        warn "多线程同步失败，尝试单线程重试..."
+        if ! repo sync -c --no-tags --no-clone-bundle -j1; then
+            error "repo sync 失败，请检查磁盘空间、权限或网络代理"
+        fi
+    fi
+
+    success "🎉 源码同步完成！总大小约 8~12GB"
+}
+
+# =====================================================
+# 📦 安装系统依赖
+# =====================================================
+install_dependencies() {
+    log "🔧 检查并安装系统依赖"
+
+    sudo apt update || error "apt update 失败"
+
+    # 基础交叉编译工具
+    sudo apt install -y \
+        git make gcc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf \
+        g++-aarch64-linux-gnu g++-arm-linux-gnueabihf \
+        libc6-dev libc6-dev-arm64-cross libc6-dev-armhf-cross \
+        unzip wget curl python3 python3-pip || error "基础依赖安装失败"
+
+    # 检查缺失的高级依赖
+    local missing_deps=()
+    for dep in "${DEPS[@]}"; do
+        if ! dpkg -l | grep -q "^ii  $dep"; then
+            missing_deps+=("$dep")
+        fi
+    done
+
+    if [ ${#missing_deps[@]} -eq 0 ]; then
+        success "所有依赖已安装"
+        return 0
+    fi
+
+    warn "发现缺失依赖: ${missing_deps[*]}"
+    read -p "是否安装? [Y/n] " -n1 -r
+    echo
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
+        error "请手动运行: sudo apt install ${missing_deps[*]}"
+    fi
+
+    sudo apt install -y "${missing_deps[@]}" || error "依赖安装失败"
+    success "依赖安装完成"
+}
+
+# =====================================================
+# 🧩 修复 multiarch 头文件路径问题（Debian/Ubuntu）
+# =====================================================
+fix_multiarch_headers() {
+    log "🔧 修复 multiarch 头文件链接"
+
+    local arch_dir="/usr/include/x86_64-linux-gnu"
+    local headers=("gmp.h" "mpfr.h" "mpc.h")
+
+    for header in "${headers[@]}"; do
+        local src="$arch_dir/$header"
+        local dst="/usr/include/$header"
+
+        if [ -f "$src" ] && [ ! -f "$dst" ]; then
+            sudo ln -sf "$src" "$dst"
+            info "创建符号链接: $dst -> $src"
+        elif [ -f "$dst" ]; then
+            debug "$dst 已存在，跳过"
+        else
+            error "未找到 $src，请确保 libgmp-dev / mpfr-dev / mpc-dev 已安装"
+        fi
+    done
+
+    success "头文件修复完成"
+}
+
+# =====================================================
+# 🛠️ 检查 toolchains 状态，决定是否需要清理
+# =====================================================
+handle_toolchains() {
+    log "🛠️  检查 toolchains 状态"
+
+    local rebuild_needed=false
+
+    if [ ! -d "$TOOLCHAINS_DIR" ]; then
+        info "未找到 toolchains 目录，需要构建"
+        rebuild_needed=true
+    elif [ ! -f "$AARCH64_GCC" ] || [ ! -f "$AARCH32_GCC" ]; then
+        warn "toolchains 不完整，需要重建"
+        rebuild_needed=true
+    else
+        success "toolchains 完整，跳过重建"
+        return 0
+    fi
+
+    if [ "$rebuild_needed" = true ]; then
+        cd "$BUILD_DIR" || error "无法进入构建目录"
+
+        info "执行深度清理..."
+        make distclean || true
+        rm -rf "$TOOLCHAINS_DIR" "$WORK_DIR/out" "$BUILD_DIR/build" 2>/dev/null || true
+        success "清理完成"
+
+        info "重新构建工具链..."
+        make -j"$JOBS" toolchains || error "工具链构建失败"
+        success "工具链构建完成"
+    fi
+}
+
+# =====================================================
+# 🧼 设置干净的构建环境（尤其 WSL）
+# =====================================================
+setup_clean_environment() {
+    log "🧼 设置构建环境"
+
+    if [ "${ON_WSL:-0}" = "1" ]; then
+        info "检测到 WSL，正在净化 PATH（避免 Windows 路径干扰）"
+        export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        export PATH="$PATH:/usr/games:/usr/local/games"
+        debug "WSL 环境净化后 PATH: $PATH"
+    else
+        debug "当前 PATH: $PATH"
+    fi
+
+    # 防止 PATH 包含空格或换行
+    if echo "$PATH" | tr ':' '\n' | grep -q '[[:space:][:cntrl:]]'; then
+        warn "PATH 中包含空格或控制字符，可能导致构建失败"
+    fi
+}
+
+# =====================================================
+# 🏗️ 构建主系统
+# =====================================================
+build_system() {
+    log "🏗️  开始构建 OP-TEE 系统"
+
+    cd "$BUILD_DIR" || error "无法进入构建目录: $BUILD_DIR"
+
+    make -j"$JOBS" all || error "主系统构建失败"
+    success "🎉 构建成功！镜像已生成"
+}
+
+# =====================================================
+# ✅ 验证 xtest 是否生成
+# =====================================================
+check_xtest() {
+    local XTEST_BIN="$WORK_DIR/optee_test/out/xtest/xtest"
+    if [ ! -f "$XTEST_BIN" ]; then
+        error "xtest 未生成: $XTEST_BIN
+
+常见原因：
+  1. build/conf/buildroot_config 中 BR2_PACKAGE_OPTEE_TEST_EXT=y 未启用
+  2. 缺少 br-ext/package/optee_test_ext/
+  3. 未运行 make optee-test-ext
+
+建议检查构建配置或重新构建"
+    fi
+    success "xtest 测试套件就绪: $XTEST_BIN"
+}
+
+# =====================================================
+# 🖥️ 启动 QEMU
+# =====================================================
+launch_qemu() {
+    log "🖥️  启动 QEMU 模拟器"
+
+    make run > qemu.log 2>&1 &
+    QEMU_PID=$!
+    sleep 8
+
+    if ! kill -0 $QEMU_PID 2>/dev/null; then
+        error "QEMU 启动失败，请查看日志: tail -f qemu.log"
+    fi
+
+    success "QEMU 运行中 (PID: $QEMU_PID)"
+    echo "
+📌 登录方式：root（无密码）
+📌 退出 QEMU：Ctrl+A, 然后按 X
+📌 查看日志：tail -f qemu.log
+"
+}
+
+# =====================================================
+# 🧪 提示运行测试
+# =====================================================
+show_test_instructions() {
+    cat << 'EOF'
+
+📌 在 QEMU 终端中运行测试：
+
+    /optee_test/run_xtest.sh
+
+📌 或直接运行：
+    xtest
+
+📌 常见测试用例：
+    xtest 1000    # TEE Core 测试
+    xtest 2001    # 加密功能测试
+    xtest 3010    # 安全存储测试
+    xtest 4001    # PKCS#11 测试
+
+📌 查看所有测试：
+    xtest --help
+
+EOF
+}
+
+# =====================================================
+# 🤔 询问是否启动 QEMU
+# =====================================================
+ask_to_launch() {
+    echo
+    read -p "是否启动 QEMU 并运行测试? [y/N] " -n1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        launch_qemu
+        show_test_instructions
+    else
+        success "构建完成，未启动 QEMU"
+        cat << EOF
+
+📌 手动启动 QEMU：
+    cd $BUILD_DIR && make run
+
+📌 运行测试：
+    登录后执行：/optee_test/run_xtest.sh
+EOF
+    fi
+}
+
+# =====================================================
+# 🚀 主流程执行
+# =====================================================
+main() {
+    info "开始构建 OP-TEE v$OPTEE_RELEASE"
+    debug "DEBUG 模式已开启"  # 设置 DEBUG=1 可查看更多输出
+
+    check_system_info
+    setup_repo_tool
+    init_and_sync_repo
+    install_dependencies
+    fix_multiarch_headers
+    handle_toolchains
+    setup_clean_environment
+    build_system
+    check_xtest
+    ask_to_launch
+
+    success "✅ 所有步骤完成！"
+}
+
+# =====================================================
+# 🏁 脚本入口
+# =====================================================
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
+```
+
 
 ```
 roborock@DESKTOP-B2S7H04:~/project$ cat run_tee_ultimate.sh
