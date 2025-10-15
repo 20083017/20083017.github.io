@@ -296,7 +296,8 @@ ask_launch() {
 # 🚀 主流程
 # =====================================================
 main() {
-    info "开始构建 OP-TEE v$OPTEE_RELEASE（中国大陆优化版）"
+    #下面这行有可能是乱码，导致变量不可用
+    #info "开始构建 OP-TEE v$OPTEE_RELEASE（中国大陆优化版）"
     debug "DEBUG 模式开启"
 
     check_environment
