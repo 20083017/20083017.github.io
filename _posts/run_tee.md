@@ -290,7 +290,7 @@ MANIFEST_FILE="default.xml"
 JOBS=$(nproc)                                  # 并行任务数
 
 # 🔧 repo 官方下载地址（HTTPS）
-REPO_URL="https://storage.googleapis.com/git-repo-downloads/repo"
+REPO_URL="https://github.com/GerritCodeReview/git-repo/raw/main/repo"
 
 # 关键依赖列表
 DEPS=("libgmp-dev" "libmpfr-dev" "libmpc-dev" "ninja-build" "rsync" "python3-pip" "bison" "flex" "libssl-dev")
@@ -320,6 +320,53 @@ warn() {
 
 # ---------- 修复 repo 工具 ----------
 log "安装或更新 repo 工具"
+
+# ---------- 安装 repo ----------
+REPO_DIR="$HOME/.bin"
+REPO_PATH="$REPO_DIR/repo"
+mkdir -p "$REPO_DIR"
+export PATH="$REPO_DIR:$PATH"
+if ! grep -q 'export PATH="$HOME/.bin:$PATH"' ~/.bashrc; then
+  echo 'export PATH="$HOME/.bin:$PATH"' >> ~/.bashrc
+fi
+
+if ! command -v repo >/dev/null 2>&1; then
+  info "Installing repo tool from GitHub..."
+  curl -L --retry 3 -o "$REPO_PATH" "$REPO_URL"
+  chmod a+rx "$REPO_PATH"
+else
+  info "Repo tool already installed."
+fi
+
+# ---------- 初始化 ----------
+mkdir -p "$WORK_DIR"
+cd "$WORK_DIR"
+
+info "Initializing OP-TEE manifest (release $OPTEE_RELEASE)..."
+
+# 自动修复旧的损坏 repo 状态
+if [ -d ".repo/repo" ] && [ ! -f ".repo/repo/main.py" ]; then
+  warn ".repo/repo seems corrupted, removing..."
+  rm -rf .repo/repo
+fi
+if [ -d ".repo" ] && [ ! -f ".repo/manifest.xml" ]; then
+  warn ".repo directory incomplete, cleaning up..."
+  rm -rf .repo
+fi
+
+if ! repo init -u "$MANIFEST_URL" -m "$MANIFEST_FILE" -b "$OPTEE_RELEASE"; then
+  warn "Repo init failed, retrying..."
+  rm -rf .repo
+  repo init -u "$MANIFEST_URL" -m "$MANIFEST_FILE" -b "$OPTEE_RELEASE"
+fi
+
+info "Syncing sources..."
+repo sync -c --no-tags --no-clone-bundle -j"$JOBS" || {
+  warn "Sync failed — retrying single-thread..."
+  repo sync -c --no-tags --no-clone-bundle -j1
+}
+
+
 
 mkdir -p ~/bin
 export PATH=~/bin:$PATH
