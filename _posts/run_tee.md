@@ -197,6 +197,10 @@ fix_multiarch_headers() {
     for header in "${headers[@]}"; do
         local src="$arch_dir/$header"
         local dst="/usr/include/$header"
+        if [ -f "$dst" ];then
+            break;
+        fi
+
         if [ -f "$src" ] && [ ! -f "$dst" ]; then
             sudo ln -sf "$src" "$dst"
             info "创建符号链接: $dst -> $src"
