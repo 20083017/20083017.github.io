@@ -262,39 +262,75 @@ build_system() {
 # =====================================================
 # ✅ 验证 xtest
 # =====================================================
+# ---------- 8. 检查 xtest 是否生成 ----------
 check_xtest() {
-    local xtest_bin="$WORK_DIR/optee_test/out/xtest/xtest"
-    [ -f "$xtest_bin" ] && success "xtest 测试套件就绪" || \
-        error "xtest 未生成，请检查 build 配置"
+    local XTEST_BIN="$WORK_DIR/optee_test/out/xtest/xtest"
+    if [ ! -f "$XTEST_BIN" ]; then
+        error "xtest 未生成: $XTEST_BIN
+
+请检查构建日志。常见原因：
+  - build/conf/buildroot_config 中 BR2_PACKAGE_OPTEE_TEST_EXT=y
+  - br-ext/package/optee_test_ext/ 存在
+  - 已运行 make optee-test-ext"
+    fi
+    success "xtest 已就绪: $XTEST_BIN"
 }
 
-# =====================================================
-# 🖥️ 启动 QEMU
-# =====================================================
+check_xtest
+
+# ---------- 9. 启动 QEMU ----------
 launch_qemu() {
-    log "🖥️  启动 QEMU"
-    cd "$BUILD_DIR" || error "进入构建目录失败"
+    log "启动 QEMU 模拟器"
     make run > qemu.log 2>&1 &
+    QEMU_PID=$!
     sleep 8
-    if pgrep qemu >/dev/null; then
-        success "QEMU 启动成功！登录: root (无密码)"
-        echo "
-📌 退出: Ctrl+A, 然后按 X
-📌 日志: tail -f qemu.log
-📌 测试: xtest 或 /optee_test/run_xtest.sh
-"
-    else
+
+    if ! kill -0 $QEMU_PID 2>/dev/null; then
         error "QEMU 启动失败，请查看 qemu.log"
     fi
+    success "QEMU 运行中 (PID: $QEMU_PID)"
+    echo "
+📌 登录：root（无密码）
+📌 退出 QEMU：Ctrl+A, X
+📌 查看日志：tail -f qemu.log
+"
 }
 
-# =====================================================
-# 🤔 询问是否启动
-# =====================================================
-ask_launch() {
+# ---------- 10. 提示运行测试 ----------
+run_xtest_hint() {
+    echo "
+📌 请在 QEMU 终端中运行测试：
+
+    /optee_test/run_xtest.sh
+
+📌 或直接运行：
+    xtest
+
+📌 常见测试：
+    xtest 1000    # TEE Core
+    xtest 2001    # Crypto
+    xtest 3010    # Secure Storage
+"
+}
+
+# ---------- 询问是否启动 ----------
+ask_to_launch() {
     echo
-    read -p "是否启动 QEMU? [y/N] " -n1 -r; echo
-    [[ $REPLY =~ ^[Yy]$ ]] && launch_qemu || success "构建完成，未启动 QEMU"
+    read -p "是否启动 QEMU 并运行测试? [y/N] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        launch_qemu
+        run_xtest_hint
+    else
+        success "构建完成，未启动 QEMU"
+        echo "
+📌 手动启动：
+  cd $BUILD_DIR && make run
+
+📌 运行测试：
+  登录后执行：/optee_test/run_xtest.sh
+"
+    fi
 }
 
 # =====================================================
