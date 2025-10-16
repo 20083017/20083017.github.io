@@ -43,7 +43,7 @@ REPO_URL_TUNA="https://mirrors.tuna.tsinghua.edu.cn/git/git-repo/"
 # 依赖包
 DEPS=("libgmp-dev" "libmpfr-dev" "libmpc-dev" "ninja-build" "rsync"
       "python3-pip" "bison" "flex" "libssl-dev" "libglib2.0-dev"
-      "libfdt-dev" "libpixman-1-dev" "zlib1g-dev")
+      "libfdt-dev" "libpixman-1-dev" "zlib1g-dev" "device-tree-compiler" "libfdt-dev")
 
 # =====================================================
 # 📝 日志与工具函数
