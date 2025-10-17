@@ -5,14 +5,21 @@ optee/build 目录下
 
 执行 
 ```
-make run QEMU_EXTRA_ARGS="-virtfs local,path=/home/roborock/optee,mount_tag=host0,security_model=none,id=host0"
-```
+make run
 
-telnet  
 
+telnet localhost 54320
+
+qemu monitor 窗口执行
 continue
 
-再执行ls 命令？
+mount? 好像也没生效呢
+mkdir -p /mnt/host
+mount -t 9p -o trans=virtio host0 /mnt/host
+
+xtest 就能看到效果了
+
+```
 
 
 ```
