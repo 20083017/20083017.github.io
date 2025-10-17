@@ -1,5 +1,20 @@
 
 arm
+
+optee/build 目录下
+
+执行 
+```
+make run QEMU_EXTRA_ARGS="-virtfs local,path=/home/roborock/optee,mount_tag=host0,security_model=none,id=host0"
+```
+
+telnet  
+
+continue
+
+再执行ls 命令？
+
+
 ```
 #!/bin/bash
 
