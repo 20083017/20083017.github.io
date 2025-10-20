@@ -1,6 +1,61 @@
 
 ### clang-format
 
+#### pre-commit hooks 只修改改动过的代码格式
+vscode配置方法，会改文件！！！
+```
+#!/usr/bin/env bash
+# ===============================================================
+# pre-commit hook: clang-format 增量格式化
+# 仅格式化本次提交修改的 C/C++ 源文件行
+# ===============================================================
+
+set -e
+set -o pipefail
+
+# ---------- 配置 ----------
+CLANG_FORMAT_BIN="clang-format"
+EXT_PATTERN="\.(c|cc|cpp|cxx|h|hpp|hh|hxx)$"
+
+# ---------- 检查依赖 ----------
+if ! command -v $CLANG_FORMAT_BIN >/dev/null 2>&1; then
+  echo "[ERROR] clang-format not found. Please install it:"
+  echo "  sudo apt install clang-format"
+  exit 1
+fi
+
+# ---------- 获取暂存文件 ----------
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "$EXT_PATTERN" || true)
+
+if [ -z "$FILES" ]; then
+  echo "[pre-commit] No C/C++ files to format."
+  exit 0
+fi
+
+# ---------- 检查并格式化 ----------
+echo "[pre-commit] Running clang-format on modified lines..."
+
+# 对每个文件单独执行 clang-format-diff
+for FILE in $FILES; do
+  if [ ! -f "$FILE" ]; then
+    continue
+  fi
+
+  # 只格式化已暂存修改的行
+  git diff -U0 --cached "$FILE" | $CLANG_FORMAT_BIN-diff -p1 -i
+
+  # 若有更改，重新添加到暂存区
+  if ! git diff --quiet "$FILE"; then
+    git add "$FILE"
+    echo "  formatted: $FILE"
+  fi
+done
+
+echo "[pre-commit] Done ✅"
+exit 0
+```
+
+
 sudo apt-get install clang-format
 
 vscode 安装clang-format 插件
