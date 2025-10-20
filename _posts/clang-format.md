@@ -236,12 +236,13 @@ TabWidth: 4
 ```
 
 ### 配置生效
-
+要求 版本 vscode 1.70+
 .vscode/settings.json
 
 ```
 "clang-format.fallbackStyle":"file",
  "editor.formatOnSave": true,
+"editor.formatOnSaveMode": "modifications",
 ```
 ### 配置检查
 ```
