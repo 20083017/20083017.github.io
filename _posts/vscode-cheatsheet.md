@@ -282,8 +282,9 @@ code --user-data-dir="."
   "editor.tabSize": 4,
   "editor.suggest.preview": true,
 
-      // 代码格式化配置
+      // 代码格式化配置 vscode 1.70+ 支持仅修改生效
     // "editor.formatOnSave": true,
+    // "editor.formatOnSaveMode": "modifications",
     // "editor.defaultFormatter": "xaver.clang-format",  // 使用Clang-Format
     // "clang-format.style": "file",  // 遵循项目.clang-format文件
     // "clang-format.fallbackStyle": "LLVM",
