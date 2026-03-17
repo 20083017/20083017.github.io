@@ -43,8 +43,8 @@ public:
                 ump.erase(l.back().first);
                 l.pop_back();
 
-                ump[key] = l.begin();
                 l.emplace_front(std::make_pair(key,value));
+                ump[key] = l.begin();
             }
         }else{
             l.remove(*ump[key]);
