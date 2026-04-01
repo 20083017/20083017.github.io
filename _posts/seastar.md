@@ -9,6 +9,10 @@
 gcc11 好像不好使，   去掉了一些tests的demo 主要是rpc相关的，可以跑起来了。
 修改configure.py 默认编译工具为 clang++， clang14,也不好使  
 
+
+sudo ./install-dependencies.sh
+
+
 ```
 sudo ./configure.py --mode=debug --cook=fmt
 sudo ninja -C build/debug -j4
