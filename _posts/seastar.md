@@ -176,6 +176,8 @@ You could clone https://github.com/microsoft/WSL2-Linux-Kernel.git and checkout 
 
 dpdk-kmods - Kernel modules or add-ons 
 
+git clone git://dpdk.org/dpdk-kmods
+
 解压后执行make编译即可，得到模块文件igb_uio.ko，执行
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/liuquan6/WSL2-Linux-Kernel-linux-msft-wsl-5.15.153.1    
