@@ -185,6 +185,27 @@ sudo insmod igb_uio.ko
 安装两个模块，此时执行
 ```
 
+可能不可用 虚拟机环境
+```
+sudo ./build/release/apps/httpd/tcp_httpd \
+    --network-stack native \
+    --dpdk-pmd pcap \          # ← 关键：改用 pcap
+    --dpdk-pmd-args "iface=enp0s3" \  # ← 指定接口名
+    --dhcp 0 \
+    --host-ipv4-addr 192.168.31.121 \  # ← 用你 ifconfig 中的实际 IP
+    --netmask-ipv4-addr 255.255.255.0 \
+    --collectd 0
+```
 
+```
+sudo ./build/release/apps/httpd/tcp_httpd \
+    --network-stack native \
+    --dpdk-pmd pcap \          # ← 关键：改用 pcap
+    --dpdk-pmd-args "iface=enp0s3" \  # ← 指定接口名
+    --dhcp 0 \
+    --host-ipv4-addr 192.168.31.121 \  # ← 用你 ifconfig 中的实际 IP
+    --netmask-ipv4-addr 255.255.255.0 \
+    --collectd 0
+```
 
 
