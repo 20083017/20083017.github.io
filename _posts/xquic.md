@@ -141,7 +141,11 @@ Client 或 Server 调用 xqc_conn_close。
 Client 端通常会调用 event_base_loopbreak 退出事件循环。
 ```
 
+### server 端如何管理 多个连接的？
 
+```
+
+```
 
 
 
