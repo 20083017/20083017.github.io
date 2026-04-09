@@ -159,5 +159,7 @@ Client 端通常会调用 event_base_loopbreak 退出事件循环。
 
 
 ###  h3连接
-
+```
+./test_client -a 127.0.0.1 -p 8843 -h test.xquic.com -T 0 -l d
+```
 
