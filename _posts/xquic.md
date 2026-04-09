@@ -148,4 +148,16 @@ Client 端通常会调用 event_base_loopbreak 退出事件循环。
 ```
 
 
+###  transport 连接
+
+```
+./test_server -p 8843 -c ./server.crt -k server.key
+```
+```
+/mnt/e/BucksClub/xquic/build/tests/test_client -a 127.0.0.1 -p 8843 -t 1 -l d
+```
+
+
+###  h3连接
+
 
