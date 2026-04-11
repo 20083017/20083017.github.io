@@ -11,6 +11,10 @@ agent 会话 压缩？ 清理？ 消耗大量token？ 忘掉历史会话？
 
 ### openclaw 配置
 
+配置文件目录
+
+~/.openclaw/openclaw.json
+
 ```
 vboxuser@ros2:~$ openclaw gateway restart
 
