@@ -9,6 +9,20 @@
 agent 会话 压缩？ 清理？ 消耗大量token？ 忘掉历史会话？
 
 
+### openclaw 配置
+
+```
+vboxuser@ros2:~$ openclaw gateway restart
+
+🦞 OpenClaw 2026.4.10 (44e5b62)
+   I run on caffeine, JSON5, and the audacity of "it worked on my machine."
+
+Restarted systemd service: openclaw-gateway.service
+vboxuser@ros2:~$ openclaw dashboard
+
+openclaw configure  修改配置
+```
+
 
 
 
