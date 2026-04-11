@@ -1,5 +1,14 @@
 
-#### 
+#### 可能存在的问题 
+
+安装 homebrew
+```
+/bin/bash -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
+```
+
+agent 会话 压缩？ 清理？ 消耗大量token？ 忘掉历史会话？
+
+
 
 
 
