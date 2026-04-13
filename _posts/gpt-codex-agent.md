@@ -8,6 +8,15 @@
 
 agent 会话 压缩？ 清理？ 消耗大量token？ 忘掉历史会话？
 
+### copilot 使用中的问题
+claude-opus-4.6 切换到 gpt-5.4 报错
+模型更换问题，gpt-5.4 模型，需要 卸载copilot 在重新安装，就不会遇到这个问题了
+```
+Sorry, your request failed. Please try again. Request id: 189fc83e-5b0a-49b4-937d-4ec3011c22f7
+
+Reason: Request Failed: 400 {"error":{"message":"Unsupported parameter: 'top_p' is not supported with this model.","code":"invalid_request_body"}}
+```
+
 
 ### openclaw 配置
 
