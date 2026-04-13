@@ -163,3 +163,23 @@ Client 端通常会调用 event_base_loopbreak 退出事件循环。
 ./test_client -a 127.0.0.1 -p 8843 -h test.xquic.com -T 0 -l d
 ```
 
+### 整合openssl 1.1.1
+```
+# 1. 创建工作目录并下载源码 (建议去官网查看最新的 1.1.1 子版本，如 1.1.1w)
+mkdir -p ~/build_env && cd ~/build_env
+wget https://www.openssl.org/source/openssl-1.1.1w.tar.gz
+
+# 2. 解压
+tar -zxvf openssl-1.1.1w.tar.gz
+cd openssl-1.1.1w
+
+# 3. 配置编译选项
+# --prefix 指定安装目录，shared 生成动态库
+./config --prefix=/usr/local/openssl-1.1.1 --openssldir=/usr/local/openssl-1.1.1 shared zlib
+
+# 4. 编译并安装
+# -j$(nproc) 表示使用多核并行编译，加快速度
+make -j$(nproc)
+sudo make install
+```
+
