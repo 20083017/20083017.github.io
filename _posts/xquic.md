@@ -254,6 +254,18 @@ sudo make install
         │  stream_close_notify()                 │
 ```
 
+```
+当前 Benchmark 评价指标
+指标	含义	当前实现
+Throughput (Mbps)	总数据吞吐量	✅ total_bytes * 8 / elapsed
+Latency (avg/p50/p95/p99/max)	单连接从创建到发送完成的耗时	✅ 百分位统计
+完成率	completed / created	✅
+失败数	超时或握手失败的连接	✅
+连接建立速率	每秒成功握手数	⚠️ 能从日志推算，但没直接输出
+每秒请求数 (RPS)	connections/sec	❌ 未输出
+服务端 CPU/内存	服务端资源消耗	❌ 未采集
+丢包/重传率	QUIC 层重传统计	❌ 未采集
+```
 
 ```
 好，~381KB（原来是 ~24KB，增大了 16 倍）。先确认服务端在运行，然后分别跑 10、100、500 连接： 
