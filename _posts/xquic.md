@@ -183,3 +183,73 @@ make -j$(nproc)
 sudo make install
 ```
 
+
+```
+  xquic_client (libevent)              seastar_server (Seastar reactor)
+  ========================              ===============================
+        │                                        │
+        │  ① xqc_h3_connect()                    │
+        │  创建 QUIC Initial 包                    │
+        │  ──── UDP [Initial, CRYPTO] ──────────► │
+        │                                        │ ② on_datagram()
+        │                                        │    xqc_engine_packet_process()
+        │                                        │    → server_accept() 创建 user_conn_t
+        │                                        │    → TLS ServerHello + Handshake
+        │                                        │    xqc_engine_finish_recv()
+        │  ◄──── UDP [Initial+Handshake] ─────── │ ③ write_socket → enqueue_send
+        │                                        │    flush_send_queue()
+        │  ④ process_socket_read()               │
+        │     xqc_engine_packet_process()         │
+        │     TLS 握手完成                         │
+        │     on_h3_conn_create_notify()          │
+        │                                        │
+        │  ⑤ send_request()                      │
+        │     xqc_h3_request_create()             │
+        │     send_headers(:method GET, :path /)  │
+        │     send_body(1024 bytes, FIN=1)        │
+        │  ──── UDP [Handshake+1-RTT] ──────────►│
+        │                                        │ ⑥ on_datagram()
+        │                                        │    h3_conn_create_notify()
+        │                                        │    h3_request_read_notify(HEADER)
+        │                                        │    h3_request_read_notify(BODY+FIN)
+        │                                        │    → send_h3_response()
+        │                                        │      headers: {:status 200, ...}
+        │                                        │      body: "Hello from Seastar XQUIC"
+        │  ◄──── UDP [1-RTT response] ────────── │ ⑦ write_socket → flush
+        │                                        │
+        │  ⑧ on_request_read_notify(HEADER)      │
+        │     打印 :status = 200                   │
+        │     on_request_read_notify(BODY+FIN)    │
+        │     打印 "h3 body read 24 bytes"         │
+        │     on_request_close_notify()           │
+        │                                        │
+        │  ──── UDP [ACK + CONN_CLOSE] ─────────►│
+        │                                        │ ⑨ conn_close_notify()
+        │  ⑩ event_base 退出                      │    释放 user_conn_t
+        │     进程结束                             │    连接从 engine 移除
+```
+
+```
+  xquic_client -t                      seastar_server (transport ALPN)
+  ===============                      ================================
+        │                                        │
+        │  xqc_connect(alpn="transport")         │
+        │  ──── QUIC Initial ───────────────────►│
+        │                                        │ server_accept()
+        │  ◄──── Handshake ─────────────────────│
+        │                                        │
+        │  on_conn_handshake_finished()          │
+        │  xqc_stream_create()                   │
+        │  xqc_stream_send("Hello Server",FIN=1)│
+        │  ──── 1-RTT STREAM ──────────────────►│
+        │                                        │ stream_create_notify()
+        │                                        │ stream_read_notify()
+        │                                        │   recv "Hello Server" + FIN
+        │                                        │   build_transport_demo_response()
+        │                                        │   → STATUS帧(ok) + INFO帧 + RESULT帧
+        │                                        │   stream_write_notify() 发送响应
+        │  ◄──── 1-RTT STREAM response ────────│
+        │                                        │
+        │  stream_read_notify()                  │
+        │  stream_close_notify()                 │
+```
