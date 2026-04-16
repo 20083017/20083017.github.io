@@ -253,3 +253,47 @@ sudo make install
         │  stream_read_notify()                  │
         │  stream_close_notify()                 │
 ```
+
+
+```
+好，~381KB（原来是 ~24KB，增大了 16 倍）。先确认服务端在运行，然后分别跑 10、100、500 连接： 
+
+Ran terminal command: ss -ulnp | grep 8443 || echo "server not running"
+
+服务端在运行。先跑 10 连接： 
+
+Ran terminal command: cd /mnt/e/BucksClub/xquic && ./build/xquic_tests/video_bench -a 127.0.0.1 -p 8443 -n 10 -r 1 --cam0 ./test_cam0_large.h264 2>&1
+
+Ran terminal command: cd /mnt/e/BucksClub/xquic && ./build/xquic_tests/video_bench -a 127.0.0.1 -p 8443 -n 100 -r 1 --cam0 ./test_cam0_large.h264 2>&1
+
+Ran terminal command: cd /mnt/e/BucksClub/xquic && ./build/xquic_tests/video_bench -a 127.0.0.1 -p 8443 -n 500 -r 1 --cam0 ./test_cam0_large.h264 2>&1
+
+## 大文件 (381KB) vs 小文件 (24KB) 压测对比
+
+| 并发 | 文件大小 | 完成率 | 耗时 | 吞吐量 | 平均延迟 | p50 | p95 |
+|------|---------|--------|------|--------|---------|-----|-----|
+| **10** | 24KB | 100% | 2.4s | 0.84 Mbps | 49ms | 50ms | 54ms |
+| **10** | 381KB | 100% | 2.4s | **13.4 Mbps** | 47ms | 49ms | 55ms |
+| **100** | 24KB | 100% | 2.4s | 8.5 Mbps | 416ms | 438ms | 782ms |
+| **100** | 381KB | 100% | 2.4s | **133 Mbps** | 400ms | 399ms | 782ms |
+| **500** | 24KB | 92.8% | 120s | 0.77 Mbps | 19.2s | 5.4s | 95.7s |
+| **500** | 381KB | **98.6%** | 120s | **12.9 Mbps** | 18.1s | 5.3s | 95.4s |
+
+## 关键发现
+
+1. **数据传输不是瓶颈**：文件大 16 倍，延迟几乎不变（10 连接: 47ms vs 49ms），说明数据发送非常快
+2. **吞吐量线性增长**：大文件让吞吐量从 0.84→13.4 Mbps (10 连接)，8.5→133 Mbps (100 连接)
+3. **100 并发 133 Mbps** 是单核 Seastar 服务端的有效数据接收能力
+4. **500 连接瓶颈不变**：仍然是 TLS 握手排队问题（波次 ~48 连接/12s），与文件大小无关
+5. 500 连接完成率反而提高（98.6% vs 92.8%），可能因为数据传输时间稍长让尾部连接有更多机会完成握手
+
+**结论：单核 Seastar 服务端并发瓶颈在 TLS 握手（~4 handshakes/sec），数据传输能力充足（>133 Mbps）。100 并发以内性能优秀，超过后急剧退化。**
+```
+
+
+
+
+
+
+
+
