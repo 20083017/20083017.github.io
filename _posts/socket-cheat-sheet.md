@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      Socket问题排查整理
-subtitle:   不适合阅读的整理的一些个人常用的 Socket参数 整理
+subtitle:   Socket 连接与参数排查记录
 date:       2022-09-09
 author:     BY
 header-img: img/post-bg-ios9-web.jpg
@@ -10,7 +10,7 @@ tags:
     - Socket
 ---
 
->随便整理的一些自用的Git指令
+>按连接队列、内核参数、抓包和 fd 排查几个维度整理 Socket 问题定位方法。
 
 
 # Socket参数整理
@@ -63,11 +63,11 @@ so_sendbuf,so_recvbuf 设置问题，建议不设置？
      压测demo中无closesocket逻辑，添加closesocket后修复。
 
 四、 ulimit -a
-       系统允许大开的fd数量
+       系统允许打开的 fd 数量
      lsof -p  pid |  wc -l
      某进程已经打开的fd数量
 
-进程允许大开最大fd数量
+进程允许打开的最大 fd 数量
 
 lsof -p pid 可得知， 16520 fd 泄露
 
