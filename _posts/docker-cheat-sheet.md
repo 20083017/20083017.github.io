@@ -1,5 +1,20 @@
-环境说明：
-当前文档针对公司当前大部分开发机的版本：
+---
+layout:     post
+title:      Docker 安装与常用命令记录
+subtitle:   旧环境下的部署笔记与风险提示
+date:       2026-04-24
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - Docker
+    - Linux
+---
+
+>本文主要记录旧版 CentOS 环境下的 Docker 搭建笔记。文中命令偏向历史环境兼容，不建议直接照搬到现代生产环境。
+
+## 环境说明
+当前文档针对历史开发机环境：
 $ cat /etc/issue
 CentOS release 6.3 (Final)
 $ uname -r
@@ -100,7 +115,10 @@ $ vim /etc/docker/daemon.json
 将默认路径调整，否则容易出现，no space left。
 如果保存不了，可能是没有 docker 文件夹，先 mkdir /etc/docker
 2、启动
-$ nohup /usr/bin/dockerd --bip=10.0.4.1/24 -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock >/dev/null 2>/dev/null &
+
+> 不建议默认监听 `tcp://0.0.0.0:2375`。2375 是未加密且无鉴权的 Docker Remote API，暴露到非可信网络会带来高风险。优先只保留 Unix Socket，或至少绑定到 `127.0.0.1` 并配合额外访问控制。
+
+$ nohup /usr/bin/dockerd --bip=10.0.4.1/24 -H unix:///var/run/docker.sock >/dev/null 2>/dev/null &
 $ nohup /usr/bin/dockerd --bip=10.0.4.1/24 -H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock >/dev/null 2>/dev/null &
 【注】：docker重启
 1. kill -9 pid

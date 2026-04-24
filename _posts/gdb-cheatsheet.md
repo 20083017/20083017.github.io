@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      Gdb指令整理
-subtitle:   不适合阅读的整理的一些个人常用的 Gdb 指令
+subtitle:   GDB 常用调试命令与排查记录
 date:       2022-09-12
 author:     BY
 header-img: img/post-bg-ios9-web.jpg
@@ -10,7 +10,7 @@ tags:
     - Gdb
 ---
 
->随便整理的一些自用的Gdb指令
+>整理常用 GDB 调试命令，以及 core dump、线程栈和符号加载相关的排查方法。
 
 ### 打开core dump文件
 ```
