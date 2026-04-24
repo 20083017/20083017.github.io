@@ -91,9 +91,11 @@ simpleperf record -g -p 20510 --duration 30 -f 12500 --call-graph fp -o perf.dat
 ### 1. 把 simpleperf 推到设备
 
 ```bash
-adb push /absolute/path/to/simpleperf /data/simpleperf
+adb push ./simpleperf /data/simpleperf
 adb shell chmod 777 /data/simpleperf
 ```
+
+这里的 `./simpleperf` 指的是你已经从 Android 平台工具、AOSP 或 simpleperf 工具包里准备好的设备侧可执行文件。
 
 原始示例里使用的是类似下面的 Windows 路径：
 
