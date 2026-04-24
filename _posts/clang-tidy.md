@@ -1,4 +1,18 @@
+---
+layout:     post
+title:      clang-tidy 使用记录
+subtitle:   安装、配置与批量检查脚本示例
+date:       2026-04-24
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - C++
+    - clang-tidy
+    - 静态分析
+---
 
+>整理 clang-tidy 的安装方式、常用配置，以及批量检查脚本示例，便于后续复用。
 
 clang   
 clangd   

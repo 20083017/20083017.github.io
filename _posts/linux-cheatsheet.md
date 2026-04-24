@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      linux指令整理
-subtitle:   不适合阅读的整理的一些个人常用的 Linux 指令
+subtitle:   常用 Linux 排查与运维命令整理
 date:       2022-09-08
 author:     BY
 header-img: img/post-bg-ios9-web.jpg
@@ -10,7 +10,7 @@ tags:
     - Linux
 ---
 
->随便整理的一些自用的Linux指令
+>按排障和运维场景整理常用 Linux 命令，优先保留能直接定位问题的内容。
 
 # 查看系统芯片方案
 cat /proc/cpuinfo
@@ -53,8 +53,8 @@ VCEI exceptions         : not available
 grep -aiI 'recv packet' *.log*   避免将文件输出为二进制 -a   
 
 #### mount
-mount 好像会自动mount。。   
-umount -l /dev/mmcblk0p1  强制umount   
+挂载前先用 `mount | grep <mountpoint>` 确认目标是否已挂载。
+`umount -l /dev/mmcblk0p1` 可用于延迟卸载。   
 
 #### dmesg
 ```
@@ -138,7 +138,7 @@ cswch（自愿上下文切换）：进程无法获取所需要的资源，导致
 
   3-2 从远程主机复制整个文件夹到本地目录下（文件夹假如是diff）
   先进入本地目录下，然后运行如下命令：
-  scp -r root@192.168.1.104:/usr/local/nginx/html/webs/diff .root@192.168.1.104:/usr/local/nginx/html/webs/diff .
+  scp -r root@192.168.1.104:/usr/local/nginx/html/webs/diff .
 
 #### perf
   每s采集99次,-p  pid
@@ -179,7 +179,7 @@ scp -v -r yun_conf {user}@{host}:{path}
 查看linux文件的pagecache情况-vmtouch   
 
 vmtouch - the Virtual Memory Toucher 就是用来查看linux文件缓存（page cache）使用情况，命中率   
-现网是真正提升能力的地方,因为机器高负载之后,会出现各种各样的问题,包括很很多"假象". 而机器高负载的原因很多,比如内存. 之前遇到的问题就是, pagecache使用过多,导致内存不足,然后接着cpu飙升,> 严重影响业务质量.这就是为什么要搞个vmtouch的原因. 我要查看哪些文件大量使用page cache， 然后好直接 echo 3 > /proc/sys/vm/drop_caches ,暴力清除缓存   
+线上高负载时，page cache 过多只是可能原因之一。可以先用 `vmtouch` 判断哪些文件占用了较多 page cache，再结合业务影响决定是否处理；`echo 3 > /proc/sys/vm/drop_caches` 属于高影响操作，只应在确认风险、评估业务影响后再执行。   
 
 
 #### 合并txt文件
@@ -208,7 +208,7 @@ ssh -f -N -L 1234:HostC:22 user@HostB
 # 1. Either, login HostC from port 1234 on localhost
 ssh -p 1234 user@localhost
 # 2. OR, scp directly
-scp -p 1234 src_dir/ user@localhost:target_dir/
+scp -P 1234 src_dir/ user@localhost:target_dir/
 ```
 ```
 # upload
@@ -264,7 +264,7 @@ vmstat 5
 
 ```
 # 每隔5s输出一组数据 
-pdistat -w 5
+pidstat -w 5
 
 #cswch 进程每s自愿上下文切换次数，说明进程都在等其他资源，如io
 #nvswch 进程每s非资源上下文切换次数，等待线程过多

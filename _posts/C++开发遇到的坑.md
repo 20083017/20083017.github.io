@@ -1,8 +1,8 @@
 
 ---
 layout:     post
-title:      c++开发遇到的坑
-subtitle:   不适合阅读的整理的一些个人常用的 c++语法
+title:      C++ 开发遇到的坑
+subtitle:   C++ 常见问题与排查记录
 date:       2022-09-08
 author:     BY
 header-img: img/post-bg-ios9-web.jpg
@@ -11,21 +11,11 @@ tags:
     - C++
 ---
 
->随便整理的一些自用的Linux指令   
+>记录几个在 C++ 开发中容易踩坑的问题，以及对应的排查思路。   
 
-# 
-  
-  od -tx1 -tc -Ax binFile
+## 目录说明
+本文主要记录 C++ 语义、链接、对象生命周期与初始化顺序相关的问题，删除了误贴入本文的 Linux 命令片段。
 
-# 
-
-#### 整数溢出
-  cat 2.log | awk -F" " '{print $1" " $2" " $3" " $4}'  | sort -t' ' -k4 -rn
-#### awk-2 统计log行数
-	grep '2022-07-25 10:' service.log.2022072510 | awk -F' ' '{print $6}' | sort | uniq -c
- 
- 
- 
 #### 参考链接
 https://coolshell.cn/articles/11466.html
 
