@@ -61,4 +61,4 @@ cp asan.sh wrap.sh
 2. 崩溃点是不是落在 libc / `strdup` 这类公共接口附近
 3. `wrap.sh` 是否和当前准备测试的 sanitizer 类型一致
 
-如果需要更完整的背景，可以结合 `/home/runner/work/20083017.github.io/20083017.github.io/_posts/Address Sanitizer 用法.md` 一起看。
+如果需要更完整的背景，可以结合《Address Sanitizer 使用笔记》一起看。
