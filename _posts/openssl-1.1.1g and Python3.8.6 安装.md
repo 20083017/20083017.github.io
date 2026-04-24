@@ -73,16 +73,23 @@ export LD_LIBRARY_PATH=/usr/local/openssl-1.1.1g/lib:$LD_LIBRARY_PATH
 
 如需长期使用，优先在单独的启动脚本、systemd unit 或用户 profile 里设置；不要把兼容性问题简单粗暴地变成 `/usr/lib64` 下的手工软链接。
 
-## 历史做法（不推荐）
+## 历史做法（默认不推荐，但作为特殊情况记录保留）
 
-原始笔记里其实还记录过几段“为了让系统默认命令马上切到新版本”而采用的处理方式。前一次整理时，这些内容被整段删掉了；这次保留它们的**背景和风险说明**，但不再按可直接执行的命令形式给出。
+原始笔记里其实还记录过几段“为了让系统默认命令马上切到新版本”而采用的处理方式。前一次整理时，这些内容被整段删掉了；这次继续把它们补回来，但明确标注为：**只适用于你已经充分评估影响范围、且确实需要让系统默认路径切换到新版本的特殊场景，不是通用升级步骤。**
 
 ### 1. 直接替换系统 `openssl` 命令与头文件
 
-历史做法大致是：
+原始笔记里的处理命令大致如下：
 
-- 先把 `/usr/bin/openssl`、`/usr/include/openssl` 备份成 `.bak`
-- 再把新安装目录下的二进制和头文件软链接回系统路径
+```bash
+mv /usr/bin/openssl /usr/bin/openssl.bak
+mv /usr/include/openssl /usr/include/openssl.bak
+
+ln -s /usr/local/openssl/bin/openssl /usr/bin/openssl
+ln -s /usr/local/openssl/include/openssl /usr/include/openssl
+```
+
+它的目的很直接：让系统里默认执行到的 `openssl` 命令、以及默认包含到的头文件，立刻指向新安装版本。
 
 当时这样做的出发点，是想让 `openssl version`、依赖系统头文件的编译流程立刻“看到”新版本。但这类做法的问题也很明显：
 
@@ -94,7 +101,26 @@ export LD_LIBRARY_PATH=/usr/local/openssl-1.1.1g/lib:$LD_LIBRARY_PATH
 
 ### 2. 在系统动态库目录里手工补 `libssl.so*` / `libcrypto.so*` 软链接
 
-原笔记还提到过一种常见补救：当系统报 `error while loading shared libraries` 时，手工把新库目录下的 `libssl.so*`、`libcrypto.so*` 链接到 `/usr/lib` 或 `/usr/lib64`。
+原笔记里还记录过两段与动态库相关的特殊处理：
+
+```bash
+echo "/usr/local/openssl/lib64" >> /etc/ld.so.conf
+ldconfig -v
+```
+
+以及在某些报错场景下，手工补系统库目录软链接：
+
+```bash
+ln -s /usr/local/openssl/lib/libssl.so.1.1 /usr/lib/libssl.so.1.1
+ln -s /usr/local/openssl/lib/libssl.so.1.1 /usr/lib64/libssl.so.1.1
+ln -s /usr/local/openssl/lib/libcrypto.so.1.1 /usr/lib64/libcrypto.so.1.1
+```
+
+这些记录之所以值得保留，是因为它们对应的确实是当时遇到的“特殊情况处理”：
+
+- 新版本已经编译安装成功，但运行时仍找不到对应 so
+- 某些旧环境里，业务程序就是通过系统默认库搜索路径启动的
+- 需要先把问题定位清楚，再决定是否要做系统级可见的补充配置
 
 这样做看起来能“快速救火”，但风险在于：
 
@@ -116,7 +142,11 @@ export LD_LIBRARY_PATH=/usr/local/openssl-1.1.1g/lib:$LD_LIBRARY_PATH
 - Python 编译或运行时找不到目标版本的 `ssl`
 - 动态库路径没有配置好，导致新程序起不来
 
-这些背景信息值得保留；但把原命令继续按“复制即可执行”的形式放在文章里，误导性会比较强。因此这次只保留为**历史背景 + 风险解释**，不再把它们写成推荐步骤。
+所以这次做的不是“继续删除”，而是把它们保留为**历史特殊处理记录**。只是阅读时要区分清楚：
+
+- 这些命令说明“以前碰到问题时是怎么处理的”
+- 不等于“现在默认就该这样做”
+- 真要使用，至少先确认系统工具、SSH、包管理器、业务二进制、回滚路径都在可控范围内
 
 ## 编译 Python 3.8.6 并链接新的 OpenSSL
 
@@ -206,6 +236,27 @@ make install
 ```
 
 这些优化项都强依赖 CPU 架构、编译器、内核和驱动栈，建议单独做基准测试，不要凭单次结果直接推广。
+
+### 性能验证 / 联调时常见命令
+
+原始笔记虽然更偏“想到什么记什么”，但这类性能相关命令确实有保留价值，至少便于后续复测：
+
+```bash
+# 查看当前 openssl 是否能识别 engine
+/usr/local/openssl-1.1.1g/bin/openssl engine -t -c
+
+# 观察某个算法在当前机器上的速度
+/usr/local/openssl-1.1.1g/bin/openssl speed -elapsed -evp aes-128-gcm
+/usr/local/openssl-1.1.1g/bin/openssl speed -elapsed -evp aes-256-gcm
+
+# 如果平台有硬件加速能力，可对比是否启用 engine / asm 前后的结果
+```
+
+这些命令本身不会替换系统库，但它们的结论也不能脱离场景解读。尤其是：
+
+- `speed` 结果更适合做“同机、同编译参数、同算法”的横向对比
+- `aesni` / `aesce` / `asm` / 硬件 engine 的收益，要结合目标 CPU 指令集与驱动情况
+- 最终仍要以真实业务负载下的吞吐、时延、CPU 占用为准
 
 ## 补充：cryptodev engine 记录
 
