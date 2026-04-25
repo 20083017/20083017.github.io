@@ -159,6 +159,52 @@ mount -t hugetlbfs nodev /mnt/huge
 - 真正涉及 DPDK、hugepage、网卡绑定时，优先在更接近物理机的环境验证
 - 如果只是要通路打通，可先考虑 `pcap` 这类更容易启动的后端
 
+## 按环境分工：本地 VM vs 云上裸金属 / SR-IOV
+
+不同环境能验证的事情不一样，混在一起跑容易把"环境限制"当成"代码 bug"。一个比较实用的分工是：
+
+### 本地 VirtualBox / WSL2：编译、单测、pcap 或 net/virtio demo
+
+定位是"验证业务逻辑能不能编出来、跑起来、行为对不对"，不追性能。
+
+- 编译 Seastar、跑 `ninja test` 单元测试
+- 业务代码用 posix 网络栈跑 demo，调试逻辑首选
+- 需要走 DPDK 路径时：
+  - VirtualBox 把网卡设成 paravirtualized，使用 `net/virtio` PMD
+  - WSL2 没有可绑定的真实网卡，只能用 `net/pcap` 后端
+- DPDK 的 meson 配置里只留 `net/virtio,net/pcap`，不开 `net/ixgbe`、`net/i40e`、`net/mlx5` 这些物理网卡 PMD
+
+这一档**不要做**的事：
+
+- 不要绑 `vfio-pci`：VirtualBox 没 IOMMU 透传，WSL2 内核没有 vfio
+- 不要看 pps / 延迟数字：virtio-net 的中断和拷贝路径会主导，没参考价值
+- 看到 `EAL: Cannot get hugepage information` 之类先查环境，别当业务 bug
+
+中间还有一档可选：本地 KVM + VT-d passthrough 把闲置网卡直通给 Guest，能跑通完整 `vfio-pci` 流程，是本地最接近物理机的调试环境。
+
+### 云上裸金属 / SR-IOV 实例：性能基准、最终验收
+
+定位是"复现真实物理机的 DPDK 路径，跑吞吐 / pps / 尾延迟，发布前验收"。
+
+- 选实例先确认 DPDK 支持矩阵（云厂文档一般直接给 PMD 名字）：
+  - AWS 裸金属 `*.metal` 或 ENA 增强网络 → `net/ena`
+  - Azure Accelerated Networking → `net/netvsc` + `net/failsafe`（双 PMD，热迁移回落到 synthetic）
+  - GCP gVNIC → `net/gve`（DPDK 22.11+）
+  - 阿里神龙裸金属 / g7ne、腾讯黑石 → 按 VF 类型选对应 PMD
+- 启动参数加 hugepage 和 IOMMU（裸金属需要 `intel_iommu=on iommu=pt`，普通 SR-IOV VM 通常不用）
+- 裸金属需要 `dpdk-devbind.py --bind=vfio-pci`，**留至少一张管理网卡给内核**，别把自己踢下线
+- SR-IOV VM 通常不绑 vfio-pci，PMD 直接接管，按云厂文档来
+- DPDK meson 配置打开实际用到的物理 PMD（`net/ena`、`net/mlx5` 等）
+
+跑基准时容易踩的坑：
+
+- AWS 等平台要关掉网卡的 source/dest check，否则 DPDK 发的非自身 MAC 流量会被云侧丢掉
+- `--smp` 和网卡 NUMA 节点对齐（看 `/sys/class/net/ethX/device/numa_node`）
+- CPU 用 `isolcpus` / `nohz_full` 隔离，避免 reactor stall
+- 性能不稳先排查云侧配额限速（如 AWS CloudWatch ENA 的 `bw_*_allowance_exceeded`），不一定是代码问题
+
+验收清单：DPDK 启动日志识别到正确网卡、hugepage 实际占用 = 配置量、持续 1 小时压测无丢包无内存泄漏、云侧监控未触顶。
+
 ## 整理后的排查顺序
 
 1. 先解决依赖库版本问题
