@@ -107,6 +107,41 @@ ENDIF ()
 - **最佳实践**：用 `.gitattributes` 管控，开发工具用 LF，团队达成共识。
 - **不建议**：用 CRLF，除非目标平台仅限 Windows 并且有特殊历史兼容需求。
 
+#### B.6 不同语言 EOL 不一致带来的典型问题
+
+按踩坑严重程度从高到低：
+
+**Shell（`.sh`）—— 最致命，直接跑不起来**
+
+- CRLF 的 `\r` 会被 shebang 解释器当成命令的一部分，典型报错：
+  - `bash: ./run.sh: /bin/bash^M: bad interpreter: No such file or directory`
+  - `$'\r': command not found`
+- 变量值带 `\r`：`VERSION=1.0` 实际是 `VERSION=1.0\r`，`[ "$VERSION" = "1.0" ]` 永远为假，拼出来的 URL 也是坏的。
+- heredoc 结束符匹配失败：`<<EOF` 配 `EOF\r`，shell 找不到结束符。
+
+**Python（`.py`）—— 大多能跑，但会静默出错**
+
+- Python 3 源码读取做了 universal newlines，脚本本身一般能跑。
+- shebang 脚本在 Linux 上仍会报 `bad interpreter: /usr/bin/env python3^M`。
+- 在 Windows 上 `open(f, "w")` 写 `\n` 会被自动转成 `\r\n`，源串本来是 `\r\n` 时会变成 `\r\r\n`；跨平台写文件应显式 `newline="\n"` 或用二进制模式。
+- `subprocess` 输出解码后行尾带 `\r`，`line.rstrip("\n")` 漏掉 `\r`，后续比较 / 正则全错。
+- 测试快照对比：`assert output == "hello\nworld\n"` 但实际是 `\r\n`，diff 里看不出来。
+
+**Markdown（`.md`）—— 不影响渲染，但污染协作**
+
+- Diff 噪声：一人 LF 一人 CRLF，提交时整个文件全行变更，PR review 看不到真实改动。
+- 合并冲突：同一行因 EOL 不同被判为冲突。
+- GFM 的"行尾两个空格 = 换行"语法，`abc␣␣\r\n` 在某些渲染器里因 `\r` 不被识别为合法换行。
+- 读者把 Markdown 代码块里的 shell 脚本复制到 Linux 上跑，又触发 Shell 那条。
+
+**一句话总结**
+
+- Shell：致命，跑不起来。
+- Python：大多能跑，但写文件 / shebang / 输出解析处会静默出错。
+- Markdown：不会坏，但污染 diff、制造无意义冲突。
+
+所以前面 B.2 用 `.gitattributes` 强制 `text eol=lf` + 编辑器统一 LF 才是一劳永逸的方案。
+
 ## 后续可补的方向
 
 ### 关于 pre-commit 钩子
@@ -119,7 +154,6 @@ ENDIF ()
 
 - `core.autocrlf` 与 `.gitattributes` 的关系，以及历史仓库切换到 LF 的迁移步骤
 - 已经混入 CRLF 的文件如何批量纠正（`dos2unix` / `git add --renormalize`）
-- 不同语言（Shell、Python、Markdown）EOL 不一致带来的典型问题示例
 
 ### 协同点（两块共同的扩展方向）
 
