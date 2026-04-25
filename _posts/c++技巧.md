@@ -1,4 +1,22 @@
-# 读文件内容到std::string c++11
+---
+layout:     post
+title:      C++ 常用小技巧三则
+subtitle:   读文件到 string、struct 与 ostream 互转、placement new
+date:       2026-04-25
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - C++
+    - 技巧
+    - 速查
+---
+
+>原始笔记是三个并列的代码块（`# 标题 + 代码`），没有上下文。这里按三块用途整理，每段代码本身保持不动。
+
+## 当前保留内容
+
+### 1. 读文件内容到 std::string（C++11）
 
 ```
 #include <fstream>
@@ -16,7 +34,10 @@ std::string readFileIntoString2(const std::string& path) {
 }
 ```
 
-# cast struct to ostream
+### 2. 把 struct 与 ostream / istream 串起来
+
+通过重载 `operator<<` / `operator>>`，让自定义结构体可以直接走流式输出/输入；`operator>>` 里使用一个临时 `values` 做"先读全再赋值"的事务式写入。
+
 ```
 struct dHeader
 {
@@ -44,7 +65,10 @@ std::istream& operator>>(std::istream& in, dHeader& h) // non-const h
 }
 ```
 
-# placement
+### 3. placement new 的标准 4 步
+
+预分配缓冲 → 在缓冲上 placement new → 使用对象 → 显式调用析构 → 释放缓冲：
+
 ```
 #include 
 
@@ -67,3 +91,8 @@ std::istream& operator>>(std::istream& in, dHeader& h) // non-const h
     delete [] buff;  
   }
 ```
+
+## 后续可补的方向
+
+- "读文件到 string"补一份 C++17 `std::filesystem` + `std::stringstream` 等价写法
+- placement new 补对齐（`std::aligned_storage` / `alignas`）的注意事项
