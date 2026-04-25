@@ -1,260 +1,217 @@
-APNs 全称是 Apple Push Notification service （苹果推送通知服务）。
+---
+layout:     post
+title:      APNs 调试与鉴权记录
+subtitle:   token-based 与 certificate-based 两种调试方式的最小备忘
+date:       2026-04-25
+author:     BY
+header-img: img/post-bg-ios10.jpg
+catalog: true
+tags:
+    - iOS
+    - APNs
+    - JWT
+    - curl
+---
 
-早期的 APNs 是使用证书的方式，缺点是有时效性，需要定期更换。
+>把原始笔记里关于 APNs 的概念、脚本和 jwt-cpp 试验代码重新收拢成一篇可回看的调试记录。
 
-到了 iOS10 时期，苹果推出了新的认证方式：密钥标识符。
+## 1. 先记住 APNs 有两套常见鉴权方式
 
-密钥标识符没有时效，可以永久使用，每个密钥标识符对应一个密钥文件，如果密钥文件泄露，可以注销密钥标识符使其失效。
+APNs 全称是 Apple Push Notification service。
 
+这篇主要整理两类调试方式：
 
-# 使用脚本测试 APNs
+1. **token-based**
+   - 使用 `.p8` 私钥
+   - 需要自己生成 JWT
+   - 适合长期使用，密钥标识符可以持续复用
+2. **certificate-based**
+   - 使用证书和私钥文件
+   - 更偏历史方案或兼容旧流程时使用
 
-开发环境下使用沙盒服务器：api.sandbox.push.apple.com
+原始笔记里保留的一条结论值得继续保留：
 
-正式环境服务器：api.push.apple.com
+>早期 APNs 常见做法是证书方式；后来的 token-based 方式更适合长期维护，因为密钥标识符可持续使用，泄露时再单独吊销即可。
 
-TEAM_ID 是开发者的组 ID，在这里查看：Locate your Team ID
+## 2. 调试前要先确认的几个量
 
-AUTH_KEY_ID 是推送 token 的标识符，在这里查看：Get a key identifier
+无论用哪种方式，下面几个参数都要先确认清楚：
 
-TOKEN_KEY_FILE_NAME 是推送 token 的密钥文件，每个 token 对应一个密钥，文件后缀是 p8，不要设置密码。
+- `TEAM_ID`：Apple Developer 团队 ID
+- `AUTH_KEY_ID`：APNs key identifier
+- `TOKEN_KEY_FILE_NAME`：对应的 `.p8` 私钥文件
+- `DEVICE_TOKEN`：目标设备 token
+- `TOPIC`：App 的 bundle id
+- `APNS_HOST_NAME`：调试环境主机名
 
-DEVICE_TOKEN 是目标设备上的 token，需要 Xcode 调试才能确定，格式是十六进制的字符串，相关信息查阅 Registering Your App with APNs 。
+常用主机：
 
-TOPIC 是 App 的 bundle id，DEVICE_TOKEN 是根据 bundle id 生成的，如果错误会收到 Topic 和 device token 不匹配的提示。
+- 开发环境：`api.sandbox.push.apple.com`
+- 正式环境：`api.push.apple.com`
 
-使用的 curl 需要支持 HTTP/2，如何确定：
+这里最容易混淆的是 `TOPIC` 和 `DEVICE_TOKEN`。  
+`DEVICE_TOKEN` 是跟具体 App 标识绑定的，如果 `TOPIC` 写错，通常会得到 topic 与 device token 不匹配之类的错误。
 
+## 3. 先确认本机 curl 是否支持 HTTP/2
+
+APNs 请求需要 HTTP/2，因此在动手前先跑一遍：
+
+```bash
+curl -V
 ```
-# curl -V
 
+如果输出里 `Features` 包含 `HTTP2`，说明当前 curl 可以直接拿来调试。例如：
+
+```text
 curl 7.78.0 (x86_64-apple-darwin20.6.0) libcurl/7.78.0 OpenSSL/1.1.1l zlib/1.2.11 zstd/1.5.0 libidn2/2.3.2 libpsl/0.21.1 (+libidn2/2.3.2) nghttp2/1.45.1
-Release-Date: 2021-07-21
-Protocols: dict file ftp ftps gopher gophers http https imap imaps mqtt pop3 pop3s rtsp smb smbs smtp smtps telnet tftp 
+Protocols: dict file ftp ftps gopher gophers http https imap imaps mqtt pop3 pop3s rtsp smb smbs smtp smtps telnet tftp
 Features: alt-svc AsynchDNS HSTS HTTP2 HTTPS-proxy IDN IPv6 Largefile libz NTLM NTLM_WB PSL SSL TLS-SRP UnixSockets zstd
 ```
 
-输出的信息中，Features 列出的特性里如果有 HTTP2 就说明可以支持。
+## 4. token-based：用 shell 脚本直接测 APNs
 
-使用以下 shell 脚本来测试推送服务：
+原始笔记里最有价值的部分，是这条可以直接打通链路的 shell 脚本。整理后保留成下面这版：
 
-
-```
+```zsh
 #!/usr/bin/env zsh
 
 set -e
 
-TEAM_ID=B********B
-TOKEN_KEY_FILE_NAME="/path/to/APNs_AuthKey_3********3.p8"
-AUTH_KEY_ID=3********3
-TOPIC=com.********
-DEVICE_TOKEN=d1aa48f********f2ed4761ad249f105375fb930a6cb713c12b0a43551b6e509
-APNS_HOST_NAME=api.sandbox.push.apple.com
-
-# openssl s_client -connect "${APNS_HOST_NAME}":443
+TEAM_ID="YOUR_TEAM_ID"
+AUTH_KEY_ID="YOUR_AUTH_KEY_ID"
+TOKEN_KEY_FILE_NAME="/path/to/AuthKey_XXXXXXXXXX.p8"
+TOPIC="com.example.app"
+DEVICE_TOKEN="YOUR_DEVICE_TOKEN"
+APNS_HOST_NAME="api.sandbox.push.apple.com"
 
 JWT_ISSUE_TIME=$(date +%s)
-JWT_HEADER=$(printf '{ "alg": "ES256", "kid": "%s" }' "${AUTH_KEY_ID}" | openssl base64 -e -A | tr -- '+/' '-_' | tr -d =)
-JWT_CLAIMS=$(printf '{ "iss": "%s", "iat": %d }' "${TEAM_ID}" "${JWT_ISSUE_TIME}" | openssl base64 -e -A | tr -- '+/' '-_' | tr -d =)
+JWT_HEADER=$(printf '{ "alg": "ES256", "kid": "%s" }' "${AUTH_KEY_ID}" | openssl base64 -e -A | tr -- '+/' '-_' | tr -d '=')
+JWT_CLAIMS=$(printf '{ "iss": "%s", "iat": %d }' "${TEAM_ID}" "${JWT_ISSUE_TIME}" | openssl base64 -e -A | tr -- '+/' '-_' | tr -d '=')
 JWT_HEADER_CLAIMS="${JWT_HEADER}.${JWT_CLAIMS}"
-JWT_SIGNED_HEADER_CLAIMS=$(printf "${JWT_HEADER_CLAIMS}" | openssl dgst -binary -sha256 -sign "${TOKEN_KEY_FILE_NAME}" | openssl base64 -e -A | tr -- '+/' '-_' | tr -d =)
+JWT_SIGNED_HEADER_CLAIMS=$(printf "%s" "${JWT_HEADER_CLAIMS}" | openssl dgst -binary -sha256 -sign "${TOKEN_KEY_FILE_NAME}" | openssl base64 -e -A | tr -- '+/' '-_' | tr -d '=')
 AUTHENTICATION_TOKEN="${JWT_HEADER}.${JWT_CLAIMS}.${JWT_SIGNED_HEADER_CLAIMS}"
 
 /usr/bin/curl -v \
-              --header "apns-topic: $TOPIC" \
-              --header "apns-push-type: alert" \
-              --header "authorization: bearer $AUTHENTICATION_TOKEN" \
-              --data '{"aps":{"alert":"test"}}' \
-              --http2 https://${APNS_HOST_NAME}/3/device/${DEVICE_TOKEN}
+  --header "apns-topic: ${TOPIC}" \
+  --header "apns-push-type: alert" \
+  --header "authorization: bearer ${AUTHENTICATION_TOKEN}" \
+  --data '{"aps":{"alert":"test"}}' \
+  --http2 "https://${APNS_HOST_NAME}/3/device/${DEVICE_TOKEN}"
 ```
 
+### 这段脚本主要在做什么
 
-# jwt-cpp 测试签名代码
+1. 用 `TEAM_ID` 和 `AUTH_KEY_ID` 拼 JWT header / claims
+2. 使用 `.p8` 私钥按 **ES256** 算法签名
+3. 把 JWT 放到 `authorization: bearer ...` 头里
+4. 用 curl 直接请求 APNs HTTP/2 接口
 
-p8文件转换为pem文件
+### 使用时优先检查的点
 
-```
-openssl pkcs8 -nocrypt -in AuthKey_AZ495JLZUJ.p8   -out AuthKey.pem
-```
+- `.p8` 文件路径是否正确
+- `TOPIC` 是否和 App bundle id 一致
+- `DEVICE_TOKEN` 是否来自同一套环境
+- 沙盒 token 不要拿去请求正式环境，反之亦然
 
-```
+## 5. jwt-cpp 试验代码：核心是 ES256 和密钥格式
 
-//     std::string rsa_priv_key = R"(-----BEGIN PRIVATE KEY-----
-// MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgiYjBk9AwaYG2o+aD
-// 455NWrS98cG8h2VOt5y9QYbBwoChRANCAARVo+QFUSYq72Fo7eUs6SatF3XzFPyC
-// /HO1KGJA0mxx0l0X2fXDtUoH0nT1/5xc7sw+G6fqchMWp1trrYCClrfo
-// -----END PRIVATE KEY-----)";
+原始记录里有一大段 jwt-cpp 实验代码，核心信息其实只有两条：
 
-//     auto token = jwt::create()
-//                      .set_issuer("6T9LLJKSM4")   //TEAM_ID
-//                      .set_key_id("AZ495JLZUJ")   //AUTH_KEY_ID
-//                      .set_type("JWS")
-//                      .set_id("com.baidu.baiduhitest")
-//                      .set_issued_at(std::chrono::system_clock::now())
-//                      .set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{36000})
-//                     //  .set_payload_claim("sample", jwt::claim(std::string{"test"}))
-//                      .sign(jwt::algorithm::es256("", rsa_priv_key, "", ""));
+1. APNs token 要用 **ES256**
+2. jwt-cpp 这类库在本地实验时，通常更适合直接喂 **PEM** 格式私钥
 
-//     std::cout << "token:\n" << token << std::endl;
+因此先把 `.p8` 转成 `.pem`：
 
+```bash
+openssl pkcs8 -nocrypt -in AuthKey_XXXXXXXXXX.p8 -out AuthKey.pem
 ```
 
-jwt-cpp代码选择es256的原因是，根据shell的token进行decode,decode的结果为ES256  ES256的含义是 使用私钥进行 sha256签名  ecdsa的签名
-而es256签名算法，需要使用pem文件，不能使用p8文件，所以这里需要将p8文件转换为pem文件。
+整理后保留一份最小示例：
 
+```cpp
+std::string ec_priv_key = R"(-----BEGIN PRIVATE KEY-----
+YOUR_PRIVATE_KEY
+-----END PRIVATE KEY-----)";
+
+auto token = jwt::create()
+                 .set_issuer("YOUR_TEAM_ID")
+                 .set_key_id("YOUR_AUTH_KEY_ID")
+                 .set_type("JWS")
+                 .set_issued_at(std::chrono::system_clock::now())
+                 .sign(jwt::algorithm::es256("", ec_priv_key, "", ""));
+
+std::cout << token << std::endl;
 ```
-hello jwt-cpp!
-iat = 1674094299
-jwt-cpp decode success!
-hello jwt-cpp!
-iss = "6T9LLJKSM4"
-jwt-cpp decode success!
+
+原始笔记里还保留了对 decode 结果的观察，结论同样值得留下：
+
+```text
 alg = "ES256"
-kid = "AZ495JLZUJ"
+kid = "YOUR_AUTH_KEY_ID"
+iss = "YOUR_TEAM_ID"
 ```
 
-```
-    // std::string token = "eyJhbGciOiJFUzI1NiIsImtpZCI6IkFaNDk1SkxaVUoiLCJ0eXAiOiJKV1MifQ.eyJleHAiOjE2NzQyMzQ3NjksImlhdCI6MTY3NDE5ODc2OSwiaXNzIjoiNlQ5TExKS1NNNCIsImp0aSI6ImNvbS5iYWlkdS5iYWlkdWhpdGVzdCIsInNhbXBsZSI6InRlc3QifQ.2pjy7NDyDmF2kVi9U8yAU5op4fqxOaZGKFKdW_vpgyAQcRMtniNhkMZOWiJWeK9NWrVcn8Xwi5hwJvK6XAJKbQ";
-    // auto decoded = jwt::decode(token);
+这说明 shell 脚本生成的 token，在结构上就是一个标准的 ES256 JWT。
 
-    // for(auto& e : decoded.get_payload_json())
-    // {
-    //     std::cout << "hello jwt-cpp!" << std::endl;
-    //     std::cout << e.first << " = " << e.second << std::endl;
-    //     std::cout << "jwt-cpp decode success!" << std::endl;
-    // }
+### 回看这段实验代码时要注意
 
-    // for (auto& e : decoded.get_header_json())
-    // {
-    //     std::cout << e.first << " = " << e.second << std::endl;
-    // }
-```
+- `verify()` 走的是公钥校验思路
+- `create()` / `sign()` 走的是私钥签名思路
+- APNs 的 token 鉴权重点不是“随便生成一个 JWT”，而是**按 Apple 要求生成 ES256 签名 JWT**
 
+原始记录里还尝试过 `hs256` 之类的代码路径，但对 APNs 场景并不适用，回看时可以直接忽略。
 
-# jwt 函数简析
+## 6. certificate-based：证书方式的 curl 备忘
 
-decode()函数：对你的token进行解码；
+如果要回查旧方案，可以保留下面这条最小脚本：
 
-get_payload_claims()：获取jwt的payload的所有声明，利用std::cout << e1.first << " = " << e1.second.to_json() << std::endl;这句话可以打印输出jwt的负载部分；
-
-get_header_claims()：获取jwt的header的所有声明，并同时可以打印输出jwt的头部；
-
-此处，verify需要使用pubkey，使用何种算法，需要看
-jwt::verify().allow_algorithm(jwt::algorithm::hs256{"secret"}).with_issuer("auth0")：声明一个解码器，利用该解码器可以对你的token值进行验证，hs256是你采用的加密算法，“secret”是你的密钥，这里可以根据自己的实际需求进行更改；
-
-verifier.verify()：验证你的token值是否正确。这里我根据自己的实际情况对github上面的开源库做了略微的修改，使其实现：如果token正确的话返回true，token错误返回false；
-
-此处，create使用prikey
-jwt::create()：生成一个token；同时你可以设置token的过期时间，上述程序没有设置token的过期时间。
-
-
-```
-
-
-        // std::string token = "eyJhbGciOiJFUzI1NiIsImtpZCI6IkFaNDk1SkxaVUoiLCJ0eXAiOiJKV1MifQ.eyJleHAiOjE2NzQyMzQ3NjksImlhdCI6MTY3NDE5ODc2OSwiaXNzIjoiNlQ5TExKS1NNNCIsImp0aSI6ImNvbS5iYWlkdS5iYWlkdWhpdGVzdCIsInNhbXBsZSI6InRlc3QifQ.2pjy7NDyDmF2kVi9U8yAU5op4fqxOaZGKFKdW_vpgyAQcRMtniNhkMZOWiJWeK9NWrVcn8Xwi5hwJvK6XAJKbQ";
-    // auto decoded = jwt::decode(token);
-
-    // for(auto& e : decoded.get_payload_json())
-    // {
-    //     std::cout << "hello jwt-cpp!" << std::endl;
-    //     std::cout << e.first << " = " << e.second << std::endl;
-    //     std::cout << "jwt-cpp decode success!" << std::endl;
-    // }
-
-    // for (auto& e : decoded.get_header_json())
-    // {
-    //     std::cout << e.first << " = " << e.second << std::endl;
-    // }
-
-
-    // auto verifier = jwt::verify()
-    // .allow_algorithm(jwt::algorithm::hs256{ R"(LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ2lZakJrOUF3YVlHMm8rYUQKNDU1TldyUzk4Y0c4aDJWT3Q1eTlRWWJCd29DaFJBTkNBQVJWbytRRlVTWXE3MkZvN2VVczZTYXRGM1h6RlB5QwovSE8xS0dKQTBteHgwbDBYMmZYRHRVb0gwblQxLzV4YzdzdytHNmZxY2hNV3AxdHJyWUNDbHJmbwotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==)" })
-    // .with_issuer("6T9LLJKSM4");
-
-    // verifier.verify(decoded);
-
-//     token = jwt::create()
-//         .set_algorithm("ES256")
-//         // .set
-//         .set_issuer("6T9LLJKSM4")
-//         .set_key_id("AZ495JLZUJ")
-//         .set_type("JWT")
-//         .set_payload_claim("sample", jwt::claim(std::string("test")))
-//         // .sign(jwt::algorithm::hs256{"AZ495JLZUJ"});
-//         .sign(jwt::algorithm::hs256{R"(-----BEGIN PRIVATE KEY-----
-// MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgiYjBk9AwaYG2o+aD
-// 455NWrS98cG8h2VOt5y9QYbBwoCgCgYIKoZIzj0DAQehRANCAARVo+QFUSYq72Fo
-// 7eUs6SatF3XzFPyC/HO1KGJA0mxx0l0X2fXDtUoH0nT1/5xc7sw+G6fqchMWp1tr
-// rYCClrfo
-// -----END PRIVATE KEY-----)"});
-
-//     std::cout << token << std::endl;
-
-//     std::string rsa_priv_key = R"(-----BEGIN PRIVATE KEY-----
-// MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgiYjBk9AwaYG2o+aD
-// 455NWrS98cG8h2VOt5y9QYbBwoChRANCAARVo+QFUSYq72Fo7eUs6SatF3XzFPyC
-// /HO1KGJA0mxx0l0X2fXDtUoH0nT1/5xc7sw+G6fqchMWp1trrYCClrfo
-// -----END PRIVATE KEY-----)";
-
-//     auto token = jwt::create()
-//                      .set_issuer("6T9LLJKSM4")
-//                      .set_key_id("AZ495JLZUJ")
-//                      .set_type("JWS")
-//                      .set_id("com.baidu.baiduhitest")
-//                      .set_issued_at(std::chrono::system_clock::now())
-//                      .set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{36000})
-//                     //  .set_payload_claim("sample", jwt::claim(std::string{"test"}))
-//                      .sign(jwt::algorithm::es256("", rsa_priv_key, "", ""));
-
-//     std::cout << "token:\n" << token << std::endl;
-```
-
-
-
-# certificated-based
-注意: 证书格式问题 pem 或者 cer
-
-```
-[Downloads] cat certificate_test.sh                                                                                                                17:49:21
+```zsh
 #!/usr/bin/env zsh
 
 set -e
 
-TOKEN_KEY_FILE_NAME="/Users/liuquan04/Downloads/AuthKey_AZ495JLZUJ.p8"
-TOPIC=com.baidu.baiduhitest
-DEVICE_TOKEN=1acdf217fc68201c685e71cc6be401f396d877a87209c7bfc5f5e4106a7f10ad
-APNS_HOST_NAME=api.push.apple.com
+TOPIC="com.example.app"
+DEVICE_TOKEN="YOUR_DEVICE_TOKEN"
+APNS_HOST_NAME="api.push.apple.com"
 
-CERTIFICATE_FILE_NAME="/Users/liuquan04/Downloads/output/cert/duneng/text_appstore_cert.pem"
-CERTIFICATE_KEY_FILE_NAME="/Users/liuquan04/Downloads/output/cert/duneng/text_appstore_key.pem"
-
-# openssl s_client -connect "${APNS_HOST_NAME}":443
-
+CERTIFICATE_FILE_NAME="/path/to/certificate.pem"
+CERTIFICATE_KEY_FILE_NAME="/path/to/private_key.pem"
 
 /usr/bin/curl -v \
-              --header "apns-topic: $TOPIC" \
-              --header "apns-push-type: alert" \
-              --cert "${CERTIFICATE_FILE_NAME}" --cert-type PEM \
-              --key "${CERTIFICATE_KEY_FILE_NAME}" --key-type PEM \
-              --data '{"aps":{"alert":"test hello"}}' \
-              --http2 https://${APNS_HOST_NAME}/3/device/${DEVICE_TOKEN}
+  --header "apns-topic: ${TOPIC}" \
+  --header "apns-push-type: alert" \
+  --cert "${CERTIFICATE_FILE_NAME}" --cert-type PEM \
+  --key "${CERTIFICATE_KEY_FILE_NAME}" --key-type PEM \
+  --data '{"aps":{"alert":"test hello"}}' \
+  --http2 "https://${APNS_HOST_NAME}/3/device/${DEVICE_TOKEN}"
 ```
 
+这套方式的重点不是 JWT，而是：
 
-# 参考链接
-https://www.cnblogs.com/moodlxs/archive/2012/10/15/2724318.html   
-https://eclipsesource.com/blogs/2016/09/07/tutorial-code-signing-and-verification-with-openssl/   
-https://0x90e.github.io/2017/02/12/verify_a_signature_with_certificate/   
-https://juejin.cn/post/6991476688345366564   
-https://www.cnblogs.com/tml839720759/p/3926006.html   
-https://www.cnblogs.com/bohat/p/12482357.html   
-https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns?language=objc   
-https://forums.mbed.com/t/jwt-es256-token-using-ecdsa/13068    
-code   
-https://github.com/Thalhammer/jwt-cpp   
-https://github.com/arun11299/cpp-jwt
+- 证书文件格式是否正确
+- 证书和私钥是否配套
+- 当前证书是否覆盖目标 App / 环境
 
+## 7. 最后只保留几条最实用的排查提醒
 
+如果 APNs 调试不通，优先按下面顺序看：
 
+1. curl 是否支持 HTTP/2
+2. 请求的是沙盒还是正式环境
+3. `TOPIC` 是否和 App bundle id 一致
+4. `DEVICE_TOKEN` 是否属于同一个 App 和同一环境
+5. token-based 场景里，JWT 是否确实按 ES256 生成
+6. certificate-based 场景里，证书和私钥是否匹配
 
+## 8. 参考链接
 
+- https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns
+- https://forums.mbed.com/t/jwt-es256-token-using-ecdsa/13068
+- https://github.com/Thalhammer/jwt-cpp
+- https://github.com/arun11299/cpp-jwt
+- https://www.cnblogs.com/moodlxs/archive/2012/10/15/2724318.html
+- https://eclipsesource.com/blogs/2016/09/07/tutorial-code-signing-and-verification-with-openssl/
+- https://0x90e.github.io/2017/02/12/verify_a_signature_with_certificate/
+- https://juejin.cn/post/6991476688345366564
+- https://www.cnblogs.com/tml839720759/p/3926006.html
+- https://www.cnblogs.com/bohat/p/12482357.html
