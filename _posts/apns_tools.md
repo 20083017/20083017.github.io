@@ -70,7 +70,7 @@ Features: alt-svc AsynchDNS HSTS HTTP2 HTTPS-proxy IDN IPv6 Largefile libz NTLM 
 
 ## 4. token-based：用 shell 脚本直接测 APNs
 
-原始笔记里最有价值的部分，是这条可以直接打通链路的 shell 脚本。整理后保留成下面这版：
+原始笔记里最有价值的部分，是这条可以直接打通链路的 shell 脚本。这里保留接近原始使用方式的版本：
 
 ```zsh
 #!/usr/bin/env zsh
@@ -83,6 +83,8 @@ TOKEN_KEY_FILE_NAME="/path/to/AuthKey_XXXXXXXXXX.p8"
 TOPIC="com.example.app"
 DEVICE_TOKEN="YOUR_DEVICE_TOKEN"
 APNS_HOST_NAME="api.sandbox.push.apple.com"
+
+# openssl s_client -connect "${APNS_HOST_NAME}":443
 
 JWT_ISSUE_TIME=$(date +%s)
 JWT_HEADER=$(printf '{ "alg": "ES256", "kid": "%s" }' "${AUTH_KEY_ID}" | openssl base64 -e -A | tr -- '+/' '-_' | tr -d '=')
@@ -115,10 +117,11 @@ AUTHENTICATION_TOKEN="${JWT_HEADER}.${JWT_CLAIMS}.${JWT_SIGNED_HEADER_CLAIMS}"
 
 ## 5. jwt-cpp 试验代码：核心是 ES256 和密钥格式
 
-原始记录里有一大段 jwt-cpp 实验代码，核心信息其实只有两条：
+原始记录里有一大段 jwt-cpp 实验代码，保留后真正有操作价值的部分主要有三类：
 
 1. APNs token 要用 **ES256**
 2. jwt-cpp 这类库在本地实验时，通常更适合直接喂 **PEM** 格式私钥
+3. decode 结果可以反过来验证 shell 脚本生成的 token 结构
 
 因此先把 `.p8` 转成 `.pem`：
 
@@ -126,7 +129,7 @@ AUTHENTICATION_TOKEN="${JWT_HEADER}.${JWT_CLAIMS}.${JWT_SIGNED_HEADER_CLAIMS}"
 openssl pkcs8 -nocrypt -in AuthKey_XXXXXXXXXX.p8 -out AuthKey.pem
 ```
 
-整理后保留一份最小示例：
+### 生成 token 的实验代码
 
 ```cpp
 std::string ec_priv_key = R"(-----BEGIN PRIVATE KEY-----
@@ -134,21 +137,47 @@ YOUR_PRIVATE_KEY
 -----END PRIVATE KEY-----)";
 
 auto token = jwt::create()
-                 .set_issuer("YOUR_TEAM_ID")
-                 .set_key_id("YOUR_AUTH_KEY_ID")
+                 .set_issuer("YOUR_TEAM_ID")   // TEAM_ID
+                 .set_key_id("YOUR_AUTH_KEY_ID")   // AUTH_KEY_ID
                  .set_type("JWS")
+                 .set_id("com.example.app")
                  .set_issued_at(std::chrono::system_clock::now())
+                 .set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{36000})
                  .sign(jwt::algorithm::es256("", ec_priv_key, "", ""));
 
-std::cout << token << std::endl;
+std::cout << "token:\n" << token << std::endl;
 ```
 
 原始笔记里还保留了对 decode 结果的观察，结论同样值得留下：
 
+### decode 已生成 token 的实验代码
+
+```cpp
+std::string token = "YOUR_JWT_TOKEN";
+auto decoded = jwt::decode(token);
+
+for (auto& e : decoded.get_payload_json()) {
+    std::cout << "hello jwt-cpp!" << std::endl;
+    std::cout << e.first << " = " << e.second << std::endl;
+    std::cout << "jwt-cpp decode success!" << std::endl;
+}
+
+for (auto& e : decoded.get_header_json()) {
+    std::cout << e.first << " = " << e.second << std::endl;
+}
+```
+
+对应观察到的输出大致如下：
+
 ```text
+hello jwt-cpp!
+iat = 1674094299
+jwt-cpp decode success!
+hello jwt-cpp!
+iss = "YOUR_TEAM_ID"
+jwt-cpp decode success!
 alg = "ES256"
 kid = "YOUR_AUTH_KEY_ID"
-iss = "YOUR_TEAM_ID"
 ```
 
 这说明 shell 脚本生成的 token，在结构上就是一个标准的 ES256 JWT。
@@ -157,13 +186,14 @@ iss = "YOUR_TEAM_ID"
 
 - `verify()` 走的是公钥校验思路
 - `create()` / `sign()` 走的是私钥签名思路
+- `decode()` 只是解码已有 token，不等于完成签名校验
 - APNs 的 token 鉴权重点不是“随便生成一个 JWT”，而是**按 Apple 要求生成 ES256 签名 JWT**
 
 原始记录里还尝试过 `hs256` 之类的代码路径，但对 APNs 场景并不适用，回看时可以直接忽略。
 
 ## 6. certificate-based：证书方式的 curl 备忘
 
-如果要回查旧方案，可以保留下面这条最小脚本：
+如果要回查旧方案，可以保留下面这条接近原始使用方式的脚本：
 
 ```zsh
 #!/usr/bin/env zsh
@@ -177,6 +207,8 @@ APNS_HOST_NAME="api.push.apple.com"
 CERTIFICATE_FILE_NAME="/path/to/certificate.pem"
 CERTIFICATE_KEY_FILE_NAME="/path/to/private_key.pem"
 
+# openssl s_client -connect "${APNS_HOST_NAME}":443
+
 /usr/bin/curl -v \
   --header "apns-topic: ${TOPIC}" \
   --header "apns-push-type: alert" \
@@ -188,7 +220,7 @@ CERTIFICATE_KEY_FILE_NAME="/path/to/private_key.pem"
 
 这套方式的重点不是 JWT，而是：
 
-- 证书文件格式是否正确
+- 证书格式是否正确（例如 `pem` / `cer`）
 - 证书和私钥是否配套
 - 当前证书是否覆盖目标 App / 环境
 
