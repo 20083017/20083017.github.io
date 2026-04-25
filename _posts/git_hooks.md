@@ -1,9 +1,24 @@
+---
+layout:     post
+title:      用 CMake 自动安装 git pre-commit 钩子
+subtitle:   把 clang-format / pre-commit 的手动配置流程包成 CMake 步骤
+date:       2026-04-25
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - Git
+    - CMake
+    - 工程化
+---
 
+>原始笔记是"手动配置 + CMake 自动配置"两段命令拼接而成，没有标题层级。这里按"手动 / 自动"两块拆开，配置文件原样保留。
 
-CMake 自动安装 git pre-commit hooks
+## 当前保留内容
 
-手动配置 pre-commit
-clang-format、pre-commit 可以通过 pip 来安装，安装完成后在你的项目目录下新建一个配置文件 .pre-commit-config.yaml，内容如下：  
+### 1. 手动配置 pre-commit
+
+`clang-format`、`pre-commit` 都可以通过 `pip` 安装，安装完成后在项目根目录新建 `.pre-commit-config.yaml`：
 
 ```
 repos:
@@ -22,11 +37,9 @@ repos:
         args: [--style=File]
 ```
 
-通过 CMake 自动配置 pre-commit
-在实际的团队协作中，你很难要求所有人都去手动安装这些钩子来提高代码可读性。特别是新人加入团队，如果这些环境都需要手动配置，   
-那光配置项目的时间可能就要很久。所以我们希望它能自动化掉。我们的项目是通过 CMake 来管理的，所以可以在 CMake 中加入如下代码，   
-让工程在初始化的时候自动去安装 clang-format、pre-commit，   
-并自动执行 pre-commit install 将钩子安装到每个开发人员仓库的 .git/hooks 目录下。      
+### 2. 通过 CMake 自动配置 pre-commit
+
+在团队协作中很难要求所有人都手动安装钩子，特别是新人加入时。所以希望工程在初始化时自动安装 `clang-format`、`pre-commit`，并自动执行 `pre-commit install` 把钩子放到每个开发者仓库的 `.git/hooks` 目录下。
 
 ```
 # Pre-commit hooks
@@ -49,3 +62,9 @@ IF (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/.git/hooks/pre-commit)
     EXECUTE_PROCESS(COMMAND pre-commit install WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 ENDIF ()
 ```
+
+## 后续可补的方向
+
+- `sudo pip install` 在 CI / 受限环境下会失败，补一份 venv 版本
+- 与 `clang-tidy`、`cmake-format`、`commitizen` 等更多钩子组合的配置
+- 在 Windows / macOS 下首次安装时常见的报错与解决办法
