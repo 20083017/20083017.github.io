@@ -171,7 +171,20 @@ mount -t hugetlbfs nodev /mnt/huge
 - 业务代码用 posix 网络栈跑 demo，调试逻辑首选
 - 需要走 DPDK 路径时：
   - VirtualBox 把网卡设成 paravirtualized，使用 `net/virtio` PMD
-  - WSL2 没有可绑定的真实网卡，只能用 `net/pcap` 后端
+  - WSL2 没有可绑定的真实网卡，只能用 `net/pcap` 后端。先 `sudo modprobe uio && sudo insmod igb_uio.ko` 装好基础内核模块，然后用 pcap 后端把 native 栈接到一张已有的接口上，例如：
+
+    ```bash
+    sudo ./build/release/apps/httpd/tcp_httpd \
+        --network-stack native \
+        --dpdk-pmd pcap \                   # 关键：改用 pcap，不走真实 PMD
+        --dpdk-pmd-args "iface=enp0s3" \    # 指定要劫持的接口名
+        --dhcp 0 \
+        --host-ipv4-addr 192.168.31.121 \   # 用 ifconfig 中的实际 IP
+        --netmask-ipv4-addr 255.255.255.0 \
+        --collectd 0
+    ```
+
+    这条命令只用来打通 native 栈的代码路径，**不要用它跑性能数字**——pcap 走的是用户态收包，吞吐和延迟都没有参考价值。
 - DPDK 的 meson 配置里只留 `net/virtio,net/pcap`，不开 `net/ixgbe`、`net/i40e`、`net/mlx5` 这些物理网卡 PMD
 
 这一档**不要做**的事：
