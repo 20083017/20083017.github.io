@@ -1,3 +1,19 @@
+---
+layout:     post
+title:      OP-TEE 运行与构建笔记整理
+subtitle:   QEMU 仿真环境部署、一键构建与 demo 快速验证脚本
+date:       2026-04-25
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - OP-TEE
+    - QEMU
+    - ARM
+---
+
+> 这篇完整保留原始笔记中可直接复用的脚本：QEMU 仿真起来的最短路径、一键构建脚本（中国大陆网络优化版）、依赖与工具链自动修复、`xtest` / demo 快速验证。需要升级组件（如 mbedtls）时也以这套脚本为基础按需调整版本号即可。
+
 
 arm
 
