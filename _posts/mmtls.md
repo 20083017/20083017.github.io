@@ -172,6 +172,108 @@ AES-GCM 使用 nonce（随机数），认证成功即可。
 
 2. <https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286266&idx=1&sn=f5d049033e251cccc22e163532355ddf&scene=0&key=b28b03434249256b2a5d4fdf323a185a798eaf972317ca3a47ef060d35c5cd8a4ae35715466d5bb5a558e424d20bef6c&ascene=0&uin=Mjc3OTU3Nzk1&devicetype=iMac+MacBookPro10%2C1+OSX+OSX+10.10.5+build%2814F1713%29&version=11020201&pass_ticket=8lpzOjRJO3IS%2BmKcvsqRN%2FlzlWyR2q2fmKv15GKO2PPYAKDGPXDhyfntueC4bIod>
 
+### 7. 哪些请求适合 0-RTT
+
+0-RTT 的本质是：客户端在还没拿到服务端 Finished 之前，就用之前缓存的 PSK 把数据加密发出去。这意味着 **early data 缺乏新鲜性保护，会被中间人重放**。所以业务侧第一道筛子是"这条请求被重放一次会不会出问题"。
+
+**适合走 0-RTT：**
+
+- 幂等请求 / 可重复执行不影响状态的请求
+- GET / 查询类请求
+- 拉配置
+- 获取资源
+- 无副作用操作
+
+**不适合走 0-RTT：**
+
+- 转账
+- 下单扣费
+- 改密码
+- 修改状态
+- 创建资源
+- 任何 replay 会造成业务问题的请求
+
+#### 7.1 前提：之前已经建立过一次连接
+
+要使用 0-RTT，必须先完成过一次正常 TLS 1.3 握手，服务端通过 `NewSessionTicket` 把恢复凭据下发给客户端。
+
+客户端需要保存：
+
+- ticket
+- 对应的 PSK 信息
+- cipher suite
+- ALPN
+- SNI / 域名
+- 最大 early data 大小（`max_early_data_size`）等
+
+下一次再连接时，客户端才能尝试 0-RTT。
+
+#### 7.2 全流程大图：分两阶段看
+
+- **阶段 A：第一次完整握手** —— 建立正常 TLS 连接、服务端发 session ticket、客户端缓存 PSK 材料。
+- **阶段 B：第二次连接走 0-RTT** —— 客户端带着 ticket / PSK 恢复会话，**直接发送 early data**，等服务端 Finished 之后再切到 1-RTT 应用流量密钥。
+
+#### 7.3 第一次完整握手（为后续 0-RTT 做准备）
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+
+    C->>S: ClientHello
+    S->>C: ServerHello
+    S->>C: EncryptedExtensions
+    S->>C: Certificate
+    S->>C: CertificateVerify
+    S->>C: Finished
+
+    C->>S: Finished
+    Note over C,S: Handshake complete, 1-RTT keys established
+
+    S->>C: NewSessionTicket
+    Note over C: Store ticket / PSK for future 0-RTT resumption
+```
+
+第一次握手里：
+
+- 正常做 ECDHE
+- 正常做证书认证
+- 正常建立 1-RTT 密钥
+- 然后服务端额外发 `NewSessionTicket`
+
+这个 ticket 不是直接明文"密钥本体"，而是恢复会话的凭据。客户端以后拿它来派生 PSK 或恢复 PSK 身份。
+
+#### 7.4 第二次连接：0-RTT + PSK 流程图
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+
+    Note over C: Has cached PSK/ticket from previous session
+
+    C->>S: ClientHello + key_share + pre_shared_key + early_data
+    C->>S: 0-RTT Application Data (encrypted with early data key)
+
+    S->>C: ServerHello
+    S->>C: EncryptedExtensions
+    S->>C: Finished
+    Note over S: Server accepts PSK and may accept or reject early data
+
+    C->>S: Finished
+    Note over C,S: Handshake completes, switch to handshake/application traffic keys
+
+    C->>S: 1-RTT Application Data
+    S->>C: 1-RTT Application Data
+```
+
+几个落地时要注意的点：
+
+- 客户端只在 early_data 里发幂等请求；非幂等请求即使 ticket 还有效，也要等 1-RTT 密钥就绪再发。
+- 服务端可以接受或拒绝 early data。被拒绝时客户端必须能在 1-RTT 密钥就绪后**重发**这批数据，所以业务层不能假设 0-RTT 一定生效。
+- early_data 的总长度受 `max_early_data_size` 限制，超过部分要排队等到握手完成。
+- 服务端需要做反重放（基于 ticket + 时间窗口 + 唯一标识），否则即使是幂等请求，重放放大也可能打穿后端缓存。
+
 ## mbedTLS 实战补充：AES IV 与 ECDH 握手时序图
 
 > mbedTLS / curl 的踩坑记录（CIPHER_LIST、NDK 版本、抓包、裁剪 config）仍在独立的 [mbedtls 笔记]({{ site.baseurl }}/2026/04/25/mbedtls/) 里；这里只补两块和上文 mmtls 协议讨论紧密相关的内容：AES key 配套的 IV / nonce 怎么选、以及完整 1-RTT ECDHE 握手的时序图。
