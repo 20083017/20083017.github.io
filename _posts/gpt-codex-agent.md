@@ -194,13 +194,42 @@ User request:
 
 ```python
 # tools/registry.py
+import ast
+import operator as op
+
+# 仅允许常见算术运算符，避免 eval 带来的任意代码执行风险
+_ALLOWED_OPS = {
+    ast.Add: op.add,
+    ast.Sub: op.sub,
+    ast.Mult: op.mul,
+    ast.Div: op.truediv,
+    ast.Mod: op.mod,
+    ast.Pow: op.pow,
+    ast.USub: op.neg,
+    ast.UAdd: op.pos,
+}
+
+
+def _safe_eval(node):
+    if isinstance(node, ast.Expression):
+        return _safe_eval(node.body)
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return node.value
+    if isinstance(node, ast.BinOp) and type(node.op) in _ALLOWED_OPS:
+        return _ALLOWED_OPS[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
+    if isinstance(node, ast.UnaryOp) and type(node.op) in _ALLOWED_OPS:
+        return _ALLOWED_OPS[type(node.op)](_safe_eval(node.operand))
+    raise ValueError("unsupported expression")
+
+
 def echo_tool(input_text: str) -> str:
     return f"Echo: {input_text}"
 
 
 def calc_tool(input_text: str) -> str:
     try:
-        return str(eval(input_text))  # 仅用于本地实验，生产请换成安全表达式求值
+        tree = ast.parse(input_text, mode="eval")
+        return str(_safe_eval(tree))
     except Exception:
         return "error"
 
@@ -225,7 +254,7 @@ def execute_tool(name: str, input_text: str) -> str:
     return "Tool not found"
 ```
 
-> 提醒：上面 `calc_tool` 用了 `eval`，只适合本地最小实验。对外暴露时务必换成 `ast.literal_eval` 或专门的表达式求值器，避免被注入任意代码。
+> 提醒：`calc_tool` 仅做受限的算术表达式求值（基于 `ast` 白名单），避免直接用 `eval()` 带来的任意代码执行风险。如需支持更复杂的表达式，建议引入专门的安全求值库或沙箱。
 
 ### 5.6 入口服务：`main.py`
 
@@ -286,5 +315,4 @@ uvicorn main:app --reload
 - Agent 会话压缩 / 摘要的具体策略
 - memory 的检索阈值调参经验
 - 工具调用从「字符串约定」升级到结构化 function call
-- 把 `eval` 替换为安全的表达式求值或 sandbox
 - 多模型切换时如何隔离客户端缓存

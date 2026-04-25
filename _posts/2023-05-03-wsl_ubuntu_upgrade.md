@@ -1,242 +1,222 @@
 ---
 layout:     post
-title:      wsl_ubuntu_upgrade 指南
-subtitle:   wsl ubuntu升级小记
+title:      WSL Ubuntu 升级与配置小记
+subtitle:   虚拟化开关、do-release-upgrade 报错、桥接模式、wsl 资源与 perf 编译脚本
 date:       2023-05-03
 author:     BY
 header-img: img/post-bg-ios9-web.jpg
 catalog: true
 tags:
-    - windows10
-    - ubuntu
-    - wsl
+    - WSL
+    - Ubuntu
+    - Windows
+    - Linux Kernel
 ---
 
->整理wsl升级ubuntu内核遇到的问题
+>原始笔记把 WSL 升级踩到的坑、网络配置和 perf 编译脚本堆在一起，这里按「升级 / 配置 / 工具」三块整理，原始命令尽量保留。
 
-# wsl_ubuntu_upgrade 指南
+## 1. Hyper-V / 虚拟化开关
 
-## 打开关闭虚拟化
-```
-打开 
+WSL2 依赖 Windows Hypervisor，必要时可以临时关闭虚拟化（例如调试 VirtualBox 等三方虚拟机）：
+
+```powershell
+# 打开
 bcdedit /set hypervisorlaunchtype auto
-关闭
+
+# 关闭
 bcdedit /set hypervisorlaunchtype off
 ```
 
-## Authentication failed
-在 Ubuntu 上执行升级命令时提示以下报错   
-```
-# do-release-upgrade
-Checking for a new Ubuntu release
-Get:1 Upgrade tool signature [1,554 B]                                                                                
-Get:2 Upgrade tool [1,319 kB]                                                                                         
-Fetched 1,320 kB in 0s (0 B/s)                                                                                        
-authenticate 'focal.tar.gz' against 'focal.tar.gz.gpg' 
+切换后需要重启 Windows 才会生效。关闭后 WSL2 也会失效，记得用完再切回 `auto`。
+
+## 2. `do-release-upgrade` 常见报错
+
+### 2.1 `Authentication failed`
+
+```text
+authenticate 'focal.tar.gz' against 'focal.tar.gz.gpg'
 Authentication failed
-Authenticating the upgrade failed. There may be a problem with the network or with the server.
 ```
-此问题一般是系统密钥出错导致的，因此重新安装即可解决。   
-```
+
+通常是系统密钥损坏，重新安装一次即可：
+
+```bash
 sudo apt install --reinstall ubuntu-keyring
 ```
 
-配置网关  /etc/resolv.conf   
+如果是 DNS 问题（拉不到 keyring 列表），先确认 `/etc/resolv.conf` 配置正确。
 
+### 2.2 升级直接 `Restoring original system state. Aborting`
 
-## upgrade 失败
-apt-get update failed because certificate verification failed because handshake failed on nodesource
-```
-sudo apt install ca-certificates
-```
-
-
-# 报错 升级失败
-```
-This question already has answers here:
-Can't upgrade to Ubuntu 21.04 : "Restoring original system state. Aborting" (3 answers)
-Closed 1 year ago.
-It's high time I upgrade Ubuntu from 18.04 to 20.04! But I don't get very far before the process aborts without an error message. Is there a log file I can check for further information?
-
-$ uname -a
-Linux tribble 5.4.72-microsoft-standard-WSL2 #1 SMP Wed Oct 28 23:40:43 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
-
-$ lsb_release -a
-No LSB modules are available.
-Distributor ID: Ubuntu
-Description:    Ubuntu 18.04.5 LTS
-Release:        18.04
-Codename:       bionic
-
-$ sudo do-release-upgrade
-Checking for a new Ubuntu release
-Get:1 Upgrade tool signature [1554 B]
-Get:2 Upgrade tool [1340 kB]
-Fetched 1342 kB in 0s (0 B/s)
-authenticate 'focal.tar.gz' against 'focal.tar.gz.gpg'
-extracting 'focal.tar.gz'
-In the created screen:
-
-Reading cache
-
-Checking package manager
-Reading package lists... Done
-Building dependency tree
-Reading state information... Done
-Hit http://security.ubuntu.com/ubuntu bionic-security InRelease
+```text
 Hit http://archive.ubuntu.com/ubuntu bionic InRelease
-Hit http://ppa.launchpad.net/maxmind/ppa/ubuntu bionic InRelease
-Hit http://archive.ubuntu.com/ubuntu bionic-updates InRelease
-Hit http://archive.ubuntu.com/ubuntu bionic-backports InRelease
-Hit https://packagecloud.io/cs50/repo/ubuntu bionic InRelease
-Fetched 0 B in 0s (0 B/s)
-Reading package lists... Done
-Building dependency tree
-Reading state information... Done
+...
 [LONG PAUSE]
-
 Restoring original system state
-
 Aborting
-Reading package lists... Done
-Building dependency tree
-Reading state information... Done
-=== Command terminated with exit status 1 (Thu Aug  5 02:10:50 2021) ===
 ```
 
-## sudo apt-get purge snapd
-https://askubuntu.com/questions/1356056/do-release-upgrade-silently-fails-upgrading-from-18-04-lts-to-20-04-lts-in-wsl
+WSL2 上从 18.04 升到 20.04 时，最常见原因之一是 `snapd`。原始笔记里保留的解法是先把 snap 清理掉，再 `do-release-upgrade`：
 
-## 更新(K)Ubuntu 18.04至20.04后出现OpenMPI-bin错误
+```bash
+sudo apt-get purge snapd
 ```
-update-alternatives: error: /var/lib/dpkg/alternatives/mpi corrupt: slave link same as main link /usr/bin/mpicc
+
+参考：<https://askubuntu.com/questions/1356056/do-release-upgrade-silently-fails-upgrading-from-18-04-lts-to-20-04-lts-in-wsl>
+
+### 2.3 升级后 OpenMPI 报 `update-alternatives` 错误
+
+```text
+update-alternatives: error: /var/lib/dpkg/alternatives/mpi corrupt:
+  slave link same as main link /usr/bin/mpicc
 ```
-解决方式
-首先删除openmpi的更新替代项：
-```
-sudo rm -f /etc/aternatives/mpi* /var/lib/dpkg/alternatives/mpi*
-```
-重新安装openmpi
-```
+
+清理掉 mpi 的 alternatives 后重装：
+
+```bash
+sudo rm -f /etc/alternatives/mpi* /var/lib/dpkg/alternatives/mpi*
 sudo apt install open-mpi
 ```
 
-## Failed to retrieve available kernel versions
-Ubuntu 22.04 LTS on WSL: "Failed to retrieve available kernel versions"/"Failed to check for processor microcode upgrades" when installing packages
+### 2.4 Ubuntu 22.04 上 `Failed to retrieve available kernel versions`
 
-```
+`needrestart` 在 WSL2 下检测内核 / microcode 升级会失败，关掉对应提示即可：
+
+```bash
 sudo vim /etc/needrestart/needrestart.conf
 
-uncomment && change the setting
-
+# 取消注释并改为：
 $nrconf{kernelhints} = 0;
-$nrconf{ucodehints} = 0;
+$nrconf{ucodehints}  = 0;
 ```
 
+## 3. 一些常用 WSL 配置
 
+### 3.1 设置默认编辑器
 
-
-### 设置wsl 默认的编辑器
-```
-sudo update-alternatives --config editor
-选择vim 或者 其他编辑器即可
+```bash
+sudo update-alternatives --config editor      # 选 vim 或其它
 git config --global core.editor vim
 ```
 
-### 关闭dash
-```
-选择no，即可
+### 3.2 关闭 dash（让 sh 指向 bash）
+
+```bash
 sudo dpkg-reconfigure dash
+# 选 No 即可
 ```
 
-### 橋接模式
- 注意：windows 必須是11以上   
-![image](https://github.com/20083017/20083017.github.io/assets/8308226/b02f3382-2ca0-4990-bc31-b880cebc9d39)
+### 3.3 桥接模式（Windows 11+）
 
+WSL2 桥接模式需要 Windows 11 或更高版本。
 
-windows  powershell脚本   
-```
-# 检查并以管理员身份运行PS并带上参数
-$currentWi = [Security.Principal.WindowsIdentity]::GetCurrent()
-$currentWp = [Security.Principal.WindowsPrincipal]$currentWi
-if( -not $currentWp.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-{
-    $boundPara = ($MyInvocation.BoundParameters.Keys | foreach{'-{0} {1}' -f  $_ ,$MyInvocation.BoundParameters[$_]} ) -join ' '
-    $currentFile = $MyInvocation.MyCommand.Definition
-    $fullPara = $boundPara + ' ' + $args -join ' '
-    Start-Process "$psHome\pwsh.exe"   -ArgumentList "$currentFile $fullPara"   -verb runas
-    return
-}
-#首先随意执行一条wsl指令，确保wsl启动，这样后续步骤才会出现WSL网络
-echo "正在检测wsl运行状态..."
-wsl --cd ~ -e ls
-echo "正在获取网卡信息..."
-Get-NetAdapter
-echo "`n正在将WSL网络桥接到以太网..."
-Set-VMSwitch WSL -NetAdapterName wsl
-echo "`n正在修改WSL网络配置..."
-wsl --cd ~ -e sh -c ./set_eth0.sh
-echo "`ndone"
-pause
+`%UserProfile%\.wslconfig`：
 
-```
-
-c/users/username/.wslconfig   
-```
+```ini
 [wsl2]
 networkingMode=bridged
 vmSwitch=wsl
 ```
 
-### 修改wsl 可用内存
+Windows 侧可以用一份 PowerShell 脚本自动准备好桥接环境（要求以管理员身份执行）：
 
+```powershell
+# 检查并以管理员身份重新启动 PowerShell
+$currentWi = [Security.Principal.WindowsIdentity]::GetCurrent()
+$currentWp = [Security.Principal.WindowsPrincipal]$currentWi
+if (-not $currentWp.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    $boundPara = ($MyInvocation.BoundParameters.Keys |
+        ForEach-Object { '-{0} {1}' -f $_, $MyInvocation.BoundParameters[$_] }) -join ' '
+    $currentFile = $MyInvocation.MyCommand.Definition
+    $fullPara = $boundPara + ' ' + ($args -join ' ')
+    Start-Process "$psHome\pwsh.exe" -ArgumentList "$currentFile $fullPara" -Verb runas
+    return
+}
+
+# 先随意执行一条 wsl 指令，确保 WSL 启动，否则不会出现 WSL 网络
+Write-Output "正在检测 WSL 运行状态..."
+wsl --cd ~ -e ls
+
+Write-Output "正在获取网卡信息..."
+Get-NetAdapter
+
+Write-Output "`n正在将 WSL 网络桥接到以太网..."
+Set-VMSwitch WSL -NetAdapterName wsl
+
+Write-Output "`n正在修改 WSL 网络配置..."
+wsl --cd ~ -e sh -c ./set_eth0.sh
+
+Write-Output "`ndone"
+pause
 ```
+
+### 3.4 限制 WSL2 可用内存
+
+`%UserProfile%\.wslconfig`：
+
+```ini
 [wsl2]
 memory=2GB
 swap=4GB
 localhostForwarding=true
-
 ```
 
-### wsl hosts 文件
-```
-# [network]
-# generateHosts = false
-```
+### 3.5 hosts 文件托管
 
-wsl ip静态配置(未用到)   
-```
-# sudo ip addr del $(ip addr show eth0 | grep 'inet\b' | awk '{print $2}' | head -n 1) dev eth0
-# sudo ip addr add 192.168.31.164/24 broadcast 192.168.31.255 dev eth0
-# sudo ip route add 0.0.0.0/0 via 192.168.31.1 dev eth0
+如果不想让 WSL 自动覆盖 `/etc/hosts`：
+
+```ini
+# /etc/wsl.conf
+[network]
+generateHosts = false
 ```
 
+### 3.6 WSL ip 静态配置（备份用）
 
-### wsl 与windows 时钟不同步
+实际很少用到，按需启用：
+
+```bash
+sudo ip addr del $(ip addr show eth0 | grep 'inet\b' | awk '{print $2}' | head -n 1) dev eth0
+sudo ip addr add 192.168.31.164/24 broadcast 192.168.31.255 dev eth0
+sudo ip route add 0.0.0.0/0 via 192.168.31.1 dev eth0
 ```
-timedatectl set-local-rtc 1 --adjust-system-clock
 
-timedatectl set-local-rtc 0 --adjust-system-clock  ok
+### 3.7 WSL 与 Windows 时钟不同步
 
-  echo "source ~/update_time.sh" >> ~/.bashrc  打开shell，自动执行脚本
-
-https://www.cnblogs.com/xiaotong-sun/p/16138941.html
-```
-update_time.sh   
-```
-#!bin/bash
-
+```bash
+# 让系统使用 UTC，并以 UTC 重置硬件时钟
 sudo timedatectl set-local-rtc 0 --adjust-system-clock
 ```
 
+也可以把校时脚本挂到 `~/.bashrc`：
 
-### wsl 安装perf 工具
+```bash
+echo "source ~/update_time.sh" >> ~/.bashrc
 ```
-#!/bin/bash
 
-# build-perf-wsl2.sh
+`update_time.sh`：
+
+```bash
+#!/bin/bash
+sudo timedatectl set-local-rtc 0 --adjust-system-clock
+```
+
+参考：<https://www.cnblogs.com/xiaotong-sun/p/16138941.html>
+
+## 4. 在 WSL2 上编译 `perf`
+
+WSL2 自带的 `perf` 经常没有，或与当前内核版本对不上。下面这份脚本会自动：
+
+1. 解析当前内核版本
+2. 拉 `microsoft/WSL2-Linux-Kernel` 仓库
+3. 找到匹配 / 相近的 tag
+4. 编译 `tools/perf` 并安装到 `/usr/local/bin/perf`
+
+`build-perf-wsl2.sh`：
+
+```bash
+#!/bin/bash
 # 自动化编译适用于当前 WSL2 内核的 perf 工具
-# 作者：Qwen
 # 使用方式：chmod +x build-perf-wsl2.sh && sudo ./build-perf-wsl2.sh
 
 set -euo pipefail
@@ -249,9 +229,9 @@ echo "🔍 正在获取当前内核版本..."
 KERNEL_FULL=$(uname -r)
 echo "VMLINUX: $KERNEL_FULL"
 
-# 提取版本号，支持格式：
-# 5.15.167.4-microsoft-standard-WSL2 → 5.15.167.4
-# 5.15.167.4   → 5.15.167.4
+# 提取版本号，支持下面两种格式：
+#   5.15.167.4-microsoft-standard-WSL2 → 5.15.167.4
+#   5.15.167.4                         → 5.15.167.4
 KERNEL_VERSION=$(echo "$KERNEL_FULL" | grep -oE '^[0-9]+(\.[0-9]+){3}')
 
 if [ -z "$KERNEL_VERSION" ]; then
@@ -262,7 +242,6 @@ fi
 
 echo "VMLINUX_VERSION: $KERNEL_VERSION"
 
-# 目标 tag 可能的名字
 TAG_EXACT="linux-msft-wsl-$KERNEL_VERSION"
 TAG_V="v$KERNEL_VERSION"
 
@@ -287,12 +266,11 @@ elif git show-ref -t --verify "refs/tags/$TAG_V" > /dev/null 2>&1; then
     MATCHED_TAG="$TAG_V"
 else
     # 模糊匹配：找最接近的版本（比如 5.15.167.x）
-    BASE_VERSION=$(echo "$KERNEL_VERSION" | cut -d. -f1-3)  # 5.15.167
+    BASE_VERSION=$(echo "$KERNEL_VERSION" | cut -d. -f1-3)
     CANDIDATES=$(git tag -l "linux-msft-wsl-$BASE_VERSION.*" | sort -V | tail -n 5)
     if [ -n "$CANDIDATES" ]; then
         echo "🟡 未找到精确匹配，尝试使用相近版本:"
         echo "$CANDIDATES"
-        # 取最新一个
         MATCHED_TAG=$(echo "$CANDIDATES" | tail -n 1)
     fi
 fi
@@ -304,14 +282,8 @@ if [ -z "$MATCHED_TAG" ]; then
 fi
 
 echo "🎯 匹配到 tag: $MATCHED_TAG"
+git checkout "$MATCHED_TAG" || { echo "❌ 切换 tag 失败"; exit 1; }
 
-echo "🔄 切换到 tag: $MATCHED_TAG"
-git checkout "$MATCHED_TAG" || {
-    echo "❌ 切换 tag 失败"
-    exit 1
-}
-
-# 创建本地分支避免 detached HEAD
 BRANCH_NAME="perf-build-$KERNEL_VERSION"
 git switch -c "$BRANCH_NAME"
 echo "✅ 已创建并切换到分支: $BRANCH_NAME"
@@ -319,7 +291,6 @@ echo "✅ 已创建并切换到分支: $BRANCH_NAME"
 echo "🛠️  开始编译 perf..."
 cd tools/perf
 
-# 安装依赖（如果尚未安装）
 if ! command -v libelf-dev &> /dev/null; then
     echo "📦 安装编译依赖..."
     apt-get update && apt-get install -y \
@@ -332,8 +303,7 @@ if ! command -v libelf-dev &> /dev/null; then
 fi
 
 echo "⚙️  执行 make..."
-make -j$(nproc)
-
+make -j"$(nproc)"
 echo "✅ 编译完成"
 
 echo "🚚 安装 perf 到 $PERF_BIN"
@@ -348,3 +318,9 @@ echo "✅ 验证: perf stat echo test"
 
 echo "💡 使用方法: perf stat <command>, perf record <command>, 等"
 ```
+
+## 5. 后续可补的方向
+
+- WSL2 与 systemd 在新版 Ubuntu 上的集成方式
+- 在 WSL2 中跑 docker / k3s 的网络抓包配合
+- `wsl --export` / `--import` 做镜像备份与回滚
