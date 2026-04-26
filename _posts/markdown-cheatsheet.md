@@ -1,3 +1,19 @@
+---
+layout:     post
+title:      Markdown 速查表（繁中翻译版）
+subtitle:   Adam-P 的 Markdown Cheatsheet 中文翻譯版
+date:       2022-09-07
+author:     BY
+header-img: img/post-bg-ios9-web.jpg
+catalog: true
+tags:
+    - Markdown
+    - Cheat Sheet
+---
+
+>本篇是从 [adam-p / markdown-here](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) 翻译过来的繁中速查表，按 [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/) 授权保留。
+>
+>这次只补上了 Jekyll 所需的 Front Matter 与少量排版整理，正文内容（含原文译文、示例、授权声明）保持原貌。
 
 這篇文章旨在作為快速參考與展示。要更多完整的資訊，請見 [John Gruber 原本的規格](http://daringfireball.net/projects/markdown/)與 [Github 偏好的 Markdown（Github-flavored Markdown，簡寫為GFM）資訊頁](http://github.github.com/github-flavored-markdown/)。
 
@@ -5,7 +21,7 @@
 
 譯註：可以參考這份[中文版文件](http://markdown.tw/)，有更詳盡的 Markdown 語法說明；如果需要可以練習的線上編輯器，可以試試看[HackMD](https://hackmd.io/)。
 
-##### 目錄  
+##### 目錄
 
 [Headers](#headers)  
 [Emphasis](#emphasis)  
