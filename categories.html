@@ -1,7 +1,7 @@
 ---
-title: Categories
+title: 文章目录
 layout: default
-description: 按目录浏览 posts
+description: 按 `_posts` 子文件夹浏览文章
 header-img: "img/tag-bg.jpg"
 ---
 
@@ -31,15 +31,19 @@ header-img: "img/tag-bg.jpg"
             {%- endcomment -%}
             {% assign grouped = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
 
-            <!-- 分类云 -->
+            <blockquote class="tag-comments">
+                这里按仓库中的 <code>_posts/&lt;folder&gt;/</code> 子目录整理文章，方便从网页上按文件夹内容回看。
+            </blockquote>
+
+            <!-- 目录云 -->
             <div id='tag_cloud' class="tags">
                 {% for category in grouped %}
                 {% if category.name contains '.md' %}{% continue %}{% endif %}
-                <a href="#{{ category.name }}" title="{{ category.name }}" rel="{{ category.items.size }}">{{ category.name }} ({{ category.items.size }})</a>
+                <a href="#{{ category.name }}" title="_posts/{{ category.name }}/" rel="{{ category.items.size }}">{{ category.name }} ({{ category.items.size }})</a>
                 {% endfor %}
             </div>
 
-            <!-- 分类列表 -->
+            <!-- 目录列表 -->
             {% for category in grouped %}
             {%- comment -%}
                 若某 post 直接位于 `_posts/` 根目录下，分组键会变成 post 文件名
@@ -49,7 +53,7 @@ header-img: "img/tag-bg.jpg"
             {% if category.name contains '.md' %}{% continue %}{% endif %}
             <div class="one-tag-list">
                 <span class="fa fa-folder-open listing-seperator" id="{{ category.name }}">
-                    <span class="tag-text">{{ category.name }}</span>
+                    <span class="tag-text">_posts/{{ category.name }}/</span>
                 </span>
                 {% assign sorted_posts = category.items | sort: "date" | reverse %}
                 {% for post in sorted_posts %}

@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      Spark SQL Cheat Sheet
-subtitle:   `regexp_extract` / `filter` / DataType 的最小速查
+title:      Spark / Spark SQL 常用命令速查
+subtitle:   正则提取、过滤聚合与官方文档入口整理
 date:       2022-09-07
 author:     BY
 header-img: img/post-bg-ios9-web.jpg
