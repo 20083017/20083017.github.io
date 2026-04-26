@@ -1,0 +1,76 @@
+---
+title: Categories
+layout: default
+description: 按目录浏览 posts
+header-img: "img/tag-bg.jpg"
+---
+
+<!-- Page Header -->
+<header class="intro-header" style="background-image: url('{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading" id="tag-heading">
+                    <h1>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</h1>
+                    <span class="subheading">{{ page.description }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            {%- comment -%}
+                按 `_posts/<dir>/` 子目录把 posts 分组。
+                Jekyll 默认不会把 `_posts` 下的子目录当作 category，所以这里
+                从 `post.path` 解析出第一级目录作为分组键，并跳过直接放在
+                `_posts/` 根目录（没有子目录可作为分类）的 post。
+            {%- endcomment -%}
+            {% assign grouped = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
+
+            <!-- 分类云 -->
+            <div id='tag_cloud' class="tags">
+                {% for category in grouped %}
+                {% if category.name contains '.md' %}{% continue %}{% endif %}
+                <a href="#{{ category.name }}" title="{{ category.name }}" rel="{{ category.items.size }}">{{ category.name }} ({{ category.items.size }})</a>
+                {% endfor %}
+            </div>
+
+            <!-- 分类列表 -->
+            {% for category in grouped %}
+            {%- comment -%}
+                若某 post 直接位于 `_posts/` 根目录下，分组键会变成 post 文件名
+                （形如 `2026-04-25-foo.md`），不是真正的目录名。这里通过判断
+                组名中是否含 `.md` 来跳过这种情况，使本页只显示真实的目录分类。
+            {%- endcomment -%}
+            {% if category.name contains '.md' %}{% continue %}{% endif %}
+            <div class="one-tag-list">
+                <span class="fa fa-folder-open listing-seperator" id="{{ category.name }}">
+                    <span class="tag-text">{{ category.name }}</span>
+                </span>
+                {% assign sorted_posts = category.items | sort: "date" | reverse %}
+                {% for post in sorted_posts %}
+                <div class="post-preview">
+                    <a href="{{ post.url | prepend: site.baseurl }}">
+                        <h2 class="post-title">
+                            {{ post.title }}
+                        </h2>
+                        {% if post.subtitle %}
+                        <h3 class="post-subtitle">
+                            {{ post.subtitle }}
+                        </h3>
+                        {% endif %}
+                    </a>
+                    <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p>
+                </div>
+                <hr>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
