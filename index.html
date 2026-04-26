@@ -3,6 +3,23 @@ layout: page
 description: "Thinking will not overcome fear but action will."
 ---
 
+{% assign post_folders = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
+<div class="post-preview">
+    <h2 class="post-title">
+        按目录阅读
+    </h2>
+    <div class="post-content-preview">
+        从 <code>_posts</code> 子文件夹进入不同类型的 blog。
+    </div>
+    <div class="tags">
+        {% for folder in post_folders %}
+        {% if folder.name contains '.md' %}{% continue %}{% endif %}
+        <a href="{{ site.baseurl }}/categories/#{{ folder.name }}" title="_posts/{{ folder.name }}/" rel="{{ folder.items.size }}">{{ folder.name }} ({{ folder.items.size }})</a>
+        {% endfor %}
+    </div>
+</div>
+<hr>
+
 {% for post in paginator.posts %}
 <div class="post-preview">
     <a href="{{ post.url | prepend: site.baseurl }}">
