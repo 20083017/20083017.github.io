@@ -1,7 +1,6 @@
 {%- comment -%}
     从 `_posts/<folder>/<file>` 中取第一级 `<folder>` 分组；
-    直接位于 `_posts/` 根目录的文章没有子目录，后面通过路径中是否还有 `/` 跳过。
-    这里不用判断分组名是否包含 `.md`，避免根目录文章使用其它扩展名时漏判。
+    直接位于 `_posts/` 根目录的文章会以文件名作为分组名，包含扩展名中的 `.`，因此跳过。
 
     参数：
     - mode：`cloud` 输出目录链接云；`list` 输出每个目录下的文章列表。
@@ -11,9 +10,7 @@
 {%- endcomment -%}
 {% assign folder_groups = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
 {% for folder in folder_groups %}
-{% assign first_post = folder.items | first %}
-{% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
-{% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}
+{% if folder.name contains '.' %}{% continue %}{% endif %}
 {% if include.mode == 'list' %}
 <div class="one-tag-list">
     <span class="fa fa-folder-open listing-seperator" id="{{ folder.name }}">
@@ -39,10 +36,13 @@
 </div>
 {% else %}
 {% assign folder_href_prefix = include.href_prefix | default: '#' %}
-{% if include.prepend_baseurl %}
-{% capture folder_href %}{{ site.baseurl }}{{ folder_href_prefix }}{{ folder.name }}{% endcapture %}
-{% else %}
+{% assign folder_href_prefix_first = folder_href_prefix | slice: 0 %}
+{% if include.prepend_baseurl and folder_href_prefix_first != '/' %}
+{% assign folder_href_prefix = folder_href_prefix | prepend: '/' %}
+{% endif %}
 {% capture folder_href %}{{ folder_href_prefix }}{{ folder.name }}{% endcapture %}
+{% if include.prepend_baseurl %}
+{% assign folder_href = folder_href | prepend: site.baseurl | replace: '//', '/' %}
 {% endif %}
 <a href="{{ folder_href }}" title="_posts/{{ folder.name }}/" data-count="{{ folder.items.size }}">{{ folder.name }} ({{ folder.items.size }})</a>
 {% endif %}
