@@ -1,0 +1,49 @@
+{%- comment -%}
+    从 `_posts/<folder>/<file>` 中取第一级 `<folder>` 分组；
+    直接位于 `_posts/` 根目录的文章会以文件名作为分组名，包含扩展名中的 `.`，因此跳过。
+
+    参数：
+    - mode：`cloud` 输出目录链接云；`list` 输出每个目录下的文章列表。
+    - href_prefix：链接前缀，例如首页使用 `/categories/#`，目录页使用 `#`。
+    - prepend_baseurl：为 true 时把 site.baseurl 放在 href_prefix 前面；
+      此时 href_prefix 应是站点根路径下的绝对路径片段，例如 `/categories/#`。
+{%- endcomment -%}
+{% assign folder_groups = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
+{% for folder in folder_groups %}
+{% if folder.name contains '.' %}{% continue %}{% endif %}
+{% if include.mode == 'list' %}
+<div class="one-tag-list">
+    <span class="fa fa-folder-open listing-seperator" id="{{ folder.name }}">
+        <span class="tag-text">_posts/{{ folder.name }}/</span>
+    </span>
+    {% assign sorted_posts = folder.items | sort: "date" | reverse %}
+    {% for post in sorted_posts %}
+    <div class="post-preview">
+        <a href="{{ post.url | prepend: site.baseurl }}">
+            <h2 class="post-title">
+                {{ post.title }}
+            </h2>
+            {% if post.subtitle %}
+            <h3 class="post-subtitle">
+                {{ post.subtitle }}
+            </h3>
+            {% endif %}
+        </a>
+        <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p>
+    </div>
+    <hr>
+    {% endfor %}
+</div>
+{% else %}
+{% assign folder_href_prefix = include.href_prefix | default: '#' %}
+{% assign folder_href_prefix_first = folder_href_prefix | slice: 0 %}
+{% if include.prepend_baseurl and folder_href_prefix_first != '/' %}
+{% assign folder_href_prefix = folder_href_prefix | prepend: '/' %}
+{% endif %}
+{% capture folder_href %}{{ folder_href_prefix }}{{ folder.name }}{% endcapture %}
+{% if include.prepend_baseurl %}
+{% assign folder_href = folder_href | prepend: site.baseurl | replace: '//', '/' %}
+{% endif %}
+<a href="{{ folder_href }}" title="_posts/{{ folder.name }}/" data-count="{{ folder.items.size }}">{{ folder.name }} ({{ folder.items.size }})</a>
+{% endif %}
+{% endfor %}

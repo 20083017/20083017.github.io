@@ -29,51 +29,17 @@ header-img: "img/tag-bg.jpg"
                 从 `post.path` 解析出第一级目录作为分组键，并跳过直接放在
                 `_posts/` 根目录（没有子目录可作为分类）的 post。
             {%- endcomment -%}
-            {% assign grouped = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
-
             <blockquote class="tag-comments">
                 这里按仓库中的 <code>_posts/&lt;folder&gt;/</code> 子目录整理文章，方便从网页上按文件夹内容回看。
             </blockquote>
 
             <!-- 目录云 -->
             <div id='tag_cloud' class="tags">
-                {% for category in grouped %}
-                {% if category.name contains '.md' %}{% continue %}{% endif %}
-                <a href="#{{ category.name }}" title="_posts/{{ category.name }}/" rel="{{ category.items.size }}">{{ category.name }} ({{ category.items.size }})</a>
-                {% endfor %}
+                {% include post-folder-browser.html mode="cloud" href_prefix="#" %}
             </div>
 
             <!-- 目录列表 -->
-            {% for category in grouped %}
-            {%- comment -%}
-                若某 post 直接位于 `_posts/` 根目录下，分组键会变成 post 文件名
-                （形如 `2026-04-25-foo.md`），不是真正的目录名。这里通过判断
-                组名中是否含 `.md` 来跳过这种情况，使本页只显示真实的目录分类。
-            {%- endcomment -%}
-            {% if category.name contains '.md' %}{% continue %}{% endif %}
-            <div class="one-tag-list">
-                <span class="fa fa-folder-open listing-seperator" id="{{ category.name }}">
-                    <span class="tag-text">_posts/{{ category.name }}/</span>
-                </span>
-                {% assign sorted_posts = category.items | sort: "date" | reverse %}
-                {% for post in sorted_posts %}
-                <div class="post-preview">
-                    <a href="{{ post.url | prepend: site.baseurl }}">
-                        <h2 class="post-title">
-                            {{ post.title }}
-                        </h2>
-                        {% if post.subtitle %}
-                        <h3 class="post-subtitle">
-                            {{ post.subtitle }}
-                        </h3>
-                        {% endif %}
-                    </a>
-                    <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p>
-                </div>
-                <hr>
-                {% endfor %}
-            </div>
-            {% endfor %}
+            {% include post-folder-browser.html mode="list" %}
 
         </div>
     </div>

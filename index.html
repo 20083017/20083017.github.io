@@ -3,6 +3,19 @@ layout: page
 description: "Thinking will not overcome fear but action will."
 ---
 
+<div class="post-preview">
+    <h2 class="post-title">
+        按目录阅读
+    </h2>
+    <div class="post-content-preview">
+        从 <code>_posts</code> 子文件夹进入不同类型的 blog。
+    </div>
+    <div class="tags">
+        {% include post-folder-browser.html mode="cloud" href_prefix="/categories/#" prepend_baseurl=true %}
+    </div>
+</div>
+<hr>
+
 {% for post in paginator.posts %}
 <div class="post-preview">
     <a href="{{ post.url | prepend: site.baseurl }}">
