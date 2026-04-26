@@ -1,0 +1,121 @@
+name: Blog Patch Agent Request
+
+on:
+  push:
+    paths:
+      - "_patch/**"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Optional _patch topic name to process"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  request-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Agent request issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          EVENT_PATH: ${{ github.event_path }}
+          INPUT_TOPIC: ${{ github.event.inputs.topic }}
+          COPILOT_AGENT_ASSIGNEE: ${{ vars.COPILOT_AGENT_ASSIGNEE || 'copilot' }}
+        run: |
+          set -euo pipefail
+
+          topic="${INPUT_TOPIC:-}"
+          changed_files=""
+
+          if [ -z "$topic" ]; then
+              # Keep this parser inline so the workflow can create the issue without checking out the repo.
+              mapfile -t patch_files < <(python3 - <<'PY'
+          import json
+          import os
+
+          event_path = os.environ["EVENT_PATH"]
+          with open(event_path, "r", encoding="utf-8") as event_file:
+              event = json.load(event_file)
+
+          files = []
+          for commit in event.get("commits", []):
+              for key in ("added", "modified", "removed"):
+                  files.extend(commit.get(key, []))
+
+          for path in sorted(set(files)):
+              if path.startswith("_patch/"):
+                  print(path)
+          PY
+              )
+
+              changed_files="$(printf '%s\n' "${patch_files[@]:-}" | sed '/^$/d')"
+              topic="$(printf '%s\n' "${patch_files[@]:-}" | awk -F/ '/^_patch\/[^/]+\// {print $2}' | sort -u | paste -sd ',' -)"
+          fi
+
+          if [ -z "$topic" ]; then
+              echo "No _patch topic was detected. Provide the workflow_dispatch topic input when running manually." >&2
+              exit 1
+          fi
+
+          safe_topic="$(printf '%s' "$topic" | tr ',' '-')"
+          title="Blog patch optimization: ${safe_topic}"
+
+          body="$(cat <<EOF
+          请创建 Agent 任务，处理本次上传到 \`_patch\` 的原始博客笔记，并在优化完成后提交 PR。
+
+          ## 处理范围
+
+          - Topic: \`${topic}\`
+          - Branch/ref: \`${REF_NAME}\`
+          - Commit: \`${SHA}\`
+
+          ## 变更文件
+
+          \`\`\`text
+          ${changed_files:-请查看 _patch/${topic}/}
+          \`\`\`
+
+          ## Agent 处理要求
+
+          1. 阅读 \`_patch/<topic>/00-index.md\` 和对应原始笔记；
+          2. 合并重复内容，拆分过长主题；
+          3. 补齐背景、步骤、风险、FAQ 和发布检查项；
+          4. 移除或脱敏密钥、账号、token、cookie、内部地址等敏感信息；
+          5. 达到发布标准后，移动到 \`_posts/<category>/YYYY-MM-DD-title.md\`；
+          6. 清理 \`_patch\` 中已发布且无保留价值的重复稿；
+          7. 运行必要验证，并通过 PR 提交。
+          EOF
+          )"
+
+          existing_issue="$(gh issue list \
+              --repo "$REPO" \
+              --state open \
+              --search "\"$title\" in:title" \
+              --json number \
+              --jq '.[0].number // empty')"
+
+          if [ -n "$existing_issue" ]; then
+              gh issue comment "$existing_issue" --repo "$REPO" --body "$body"
+              issue_number="$existing_issue"
+              echo "Updated existing issue #$issue_number"
+          else
+              issue_url="$(gh issue create --repo "$REPO" --title "$title" --body "$body")"
+              issue_number="${issue_url##*/}"
+              echo "Created issue #$issue_number"
+          fi
+
+          if [ -n "${COPILOT_AGENT_ASSIGNEE:-}" ]; then
+              if gh issue edit "$issue_number" --repo "$REPO" --add-assignee "$COPILOT_AGENT_ASSIGNEE"; then
+                  echo "Assigned issue #$issue_number to $COPILOT_AGENT_ASSIGNEE"
+              else
+                  gh issue comment "$issue_number" --repo "$REPO" --body "自动分配给 \`${COPILOT_AGENT_ASSIGNEE}\` 失败。请确认仓库已启用 Copilot coding agent，或手动分配给可用 Agent。"
+                  echo "Warning: unable to assign issue #$issue_number to $COPILOT_AGENT_ASSIGNEE" >&2
+              fi
+          fi
