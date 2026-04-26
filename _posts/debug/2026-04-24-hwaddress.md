@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      Android HWASan 使用补充
-subtitle:   `strdup` 崩溃与 `wrap.sh` 切换的两条短记录
+title:      HWASan / ASan 下 strdup 崩溃排查记录
+subtitle:   `strdup` 线索与 `wrap.sh` 切换记录
 date:       2026-04-24
 author:     BY
 header-img: img/post-bg-debug.png
