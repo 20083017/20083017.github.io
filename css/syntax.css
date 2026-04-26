@@ -1,8 +1,8 @@
-/* to make lines scroll instead of wrap */
+/* wrap long lines in code blocks for easier reading */
 /* from http://stackoverflow.com/a/23393920 */
 
 .highlight pre code * {
-  white-space: nowrap;    // this sets all children inside to nowrap
+  white-space: inherit;   // allow highlighted spans to wrap with the parent
 }
 
 .highlight pre {
@@ -10,7 +10,9 @@
 }
 
 .highlight pre code {
-  white-space: pre;       // forces <code> to respect <pre> formatting
+  white-space: pre-wrap;  // preserve formatting while allowing wrap
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 

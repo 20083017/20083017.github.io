@@ -113,8 +113,9 @@ pre,.table-responsive{
 pre code{
 	display: block;
 	width: auto;
-	white-space: pre;	// save it but no-wrap;
-	word-wrap: normal;	// no-wrap
+	white-space: pre-wrap;	// keep formatting while allowing wrap
+	word-wrap: break-word;
+	overflow-wrap: anywhere;
 }
 
 // In the list of posts
@@ -1023,6 +1024,5 @@ img::-moz-selection {
 .page-fullscreen footer .copyright a:hover{
 	color: #ddd;
 }
-
 
 
