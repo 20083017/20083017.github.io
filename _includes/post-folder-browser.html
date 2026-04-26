@@ -29,7 +29,7 @@
         <code>_posts/{{ folder.name }}/</code>
         {% if folder_meta.description %} · {{ folder_meta.description }}{% endif %}
     </blockquote>
-    {% assign sorted_posts = folder.items | sort: "date" | reverse %}
+    {% assign sorted_posts = folder.items | sort: "date" %}
     {% for post in sorted_posts %}
     <div class="post-preview">
         <a href="{{ post.url | prepend: site.baseurl }}">
