@@ -1,6 +1,7 @@
 {%- comment -%}
     从 `_posts/<folder>/<file>` 中取第一级 `<folder>` 分组；
     直接位于 `_posts/` 根目录的文章没有子目录，后面通过路径中是否还有 `/` 跳过。
+    这里不用判断分组名是否包含 `.md`，避免根目录文章使用其它扩展名时漏判。
 
     参数：
     - mode：`cloud` 输出目录链接云；`list` 输出每个目录下的文章列表。
@@ -8,8 +9,8 @@
     - prepend_baseurl：为 true 时把 site.baseurl 放在 href_prefix 前面；
       此时 href_prefix 应是站点根路径下的绝对路径片段，例如 `/categories/#`。
 {%- endcomment -%}
-{% assign post_folder_groups = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
-{% for folder in post_folder_groups %}
+{% assign folder_groups = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
+{% for folder in folder_groups %}
 {% assign first_post = folder.items | first %}
 {% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
 {% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}

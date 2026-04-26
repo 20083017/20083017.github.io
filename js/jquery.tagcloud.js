@@ -35,7 +35,12 @@
   };
 
   function tagWeight (tag) {
-    return tag.data("count") || tag.attr("rel");
+    var weight = tag.data("count");
+    if (weight === undefined) {
+      weight = tag.attr("rel");
+    }
+    weight = Number(weight);
+    return isNaN(weight) ? 0 : weight;
   }
 
   // Converts hex to an RGB array
