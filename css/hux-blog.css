@@ -668,6 +668,77 @@ pre code {
     font-size: 14px;
   }
 }
+.home-intro {
+  margin-bottom: 28px;
+}
+.home-intro .post-title {
+  margin-top: 8px;
+}
+.home-eyebrow {
+  margin: 0;
+  color: #0085a1;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.home-folder-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 16px;
+  margin: 32px 0 48px;
+}
+@media only screen and (min-width: 768px) {
+  .home-folder-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 18px;
+  }
+}
+.home-folder-card {
+  display: block;
+  min-height: 138px;
+  padding: 22px;
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+  transition: all .2s ease;
+}
+.home-folder-card:hover,
+.home-folder-card:focus {
+  border-color: #0085a1;
+  box-shadow: 0 10px 24px rgba(0, 133, 161, 0.12);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+.home-folder-card:hover .home-folder-title,
+.home-folder-card:focus .home-folder-title {
+  color: #0085a1;
+}
+.home-folder-title,
+.home-folder-description,
+.home-folder-count {
+  display: block;
+}
+.home-folder-title {
+  color: #404040;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.home-folder-description {
+  min-height: 42px;
+  margin-top: 10px;
+  color: #808080;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.home-folder-count {
+  margin-top: 16px;
+  color: #0085a1;
+  font-size: 13px;
+  font-weight: 600;
+}
 .section-heading {
   font-size: 36px;
   margin-top: 60px;
