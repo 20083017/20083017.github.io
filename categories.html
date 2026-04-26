@@ -29,49 +29,17 @@ header-img: "img/tag-bg.jpg"
                 从 `post.path` 解析出第一级目录作为分组键，并跳过直接放在
                 `_posts/` 根目录（没有子目录可作为分类）的 post。
             {%- endcomment -%}
-            {% assign grouped = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
-
             <blockquote class="tag-comments">
                 这里按仓库中的 <code>_posts/&lt;folder&gt;/</code> 子目录整理文章，方便从网页上按文件夹内容回看。
             </blockquote>
 
             <!-- 目录云 -->
             <div id='tag_cloud' class="tags">
-                {% include post-folder-cloud.html href_prefix="#" %}
+                {% include post-folder-browser.html mode="cloud" href_prefix="#" %}
             </div>
 
             <!-- 目录列表 -->
-            {% for category in grouped %}
-            {%- comment -%}
-                只有 `_posts/<folder>/<file>` 这种路径才是真正的子目录分类；
-                直接放在 `_posts/` 根目录下的文章没有 `/`，这里跳过。
-            {%- endcomment -%}
-            {% assign first_post = category.items | first %}
-            {% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
-            {% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}
-            <div class="one-tag-list">
-                <span class="fa fa-folder-open listing-seperator" id="{{ category.name }}">
-                    <span class="tag-text">_posts/{{ category.name }}/</span>
-                </span>
-                {% assign sorted_posts = category.items | sort: "date" | reverse %}
-                {% for post in sorted_posts %}
-                <div class="post-preview">
-                    <a href="{{ post.url | prepend: site.baseurl }}">
-                        <h2 class="post-title">
-                            {{ post.title }}
-                        </h2>
-                        {% if post.subtitle %}
-                        <h3 class="post-subtitle">
-                            {{ post.subtitle }}
-                        </h3>
-                        {% endif %}
-                    </a>
-                    <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p>
-                </div>
-                <hr>
-                {% endfor %}
-            </div>
-            {% endfor %}
+            {% include post-folder-browser.html mode="list" %}
 
         </div>
     </div>
