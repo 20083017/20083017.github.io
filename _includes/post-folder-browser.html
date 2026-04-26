@@ -14,7 +14,13 @@
 {% capture folder_href %}{{ site.baseurl }}/folders/{{ folder.name }}/{% endcapture %}
 {% assign folder_href = folder_href | replace: '//', '/' %}
 {% if include.mode == 'single' and include.folder != folder.name %}{% continue %}{% endif %}
-{% if include.mode == 'list' or include.mode == 'single' %}
+{% if include.mode == 'cards' %}
+<a class="home-folder-card" href="{{ folder_href }}" title="_posts/{{ folder.name }}/">
+    <span class="home-folder-title">{{ folder_title }}</span>
+    <span class="home-folder-description">{{ folder_meta.description | default: folder.name }}</span>
+    <span class="home-folder-count">{{ folder.items.size }} 篇文章</span>
+</a>
+{% elsif include.mode == 'list' or include.mode == 'single' %}
 <div class="one-tag-list">
     <span class="fa fa-folder-open listing-seperator" id="{{ folder.name }}">
         <span class="tag-text">{{ folder_title }}</span>
