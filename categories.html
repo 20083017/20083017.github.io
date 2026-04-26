@@ -12,7 +12,6 @@ header-img: "img/tag-bg.jpg"
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                 <div class="site-heading" id="tag-heading">
                     <h1>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</h1>
-                    <span class="subheading">{{ page.description }}</span>
                 </div>
             </div>
         </div>
@@ -29,10 +28,6 @@ header-img: "img/tag-bg.jpg"
                 从 `post.path` 解析出第一级目录作为分组键，并跳过直接放在
                 `_posts/` 根目录（没有子目录可作为分类）的 post。
             {%- endcomment -%}
-            <blockquote class="tag-comments">
-                这里按仓库中的 <code>_posts/&lt;folder&gt;/</code> 子目录整理文章，方便从网页上按文件夹内容回看。
-            </blockquote>
-
             <!-- 目录云 -->
             <div id='tag_cloud' class="tags">
                 {% include post-folder-browser.html mode="cloud" %}
