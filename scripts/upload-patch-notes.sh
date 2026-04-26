@@ -81,7 +81,7 @@ copy_one_file() {
 
     destination="$(unique_destination "$source_file")"
     cp -p "$source_file" "$destination"
-    uploaded_date="$(date -u +%Y-%m-%d)"
+    uploaded_date="$(date +%Y-%m-%d)"
     printf -- '- [ ] `%s` - uploaded %s\n' "$(basename "$destination")" "$uploaded_date" >>"$index_file"
     echo "Uploaded: $source_file -> ${destination#$repo_root/}"
 }

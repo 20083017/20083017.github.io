@@ -60,7 +60,8 @@ jobs:
           fi
 
           if [ -z "$topic" ]; then
-              topic="patch-notes"
+              echo "No _patch topic was detected. Provide the workflow_dispatch topic input when running manually." >&2
+              exit 1
           fi
 
           safe_topic="$(printf '%s' "$topic" | tr ',' '-')"
