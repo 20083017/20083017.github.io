@@ -38,19 +38,18 @@ header-img: "img/tag-bg.jpg"
             <!-- 目录云 -->
             <div id='tag_cloud' class="tags">
                 {% for category in grouped %}
-                {% if category.name contains '.md' %}{% continue %}{% endif %}
+                {% assign first_post = category.items | first %}
+                {% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
+                {% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}
                 <a href="#{{ category.name }}" title="_posts/{{ category.name }}/" rel="{{ category.items.size }}">{{ category.name }} ({{ category.items.size }})</a>
                 {% endfor %}
             </div>
 
             <!-- 目录列表 -->
             {% for category in grouped %}
-            {%- comment -%}
-                若某 post 直接位于 `_posts/` 根目录下，分组键会变成 post 文件名
-                （形如 `2026-04-25-foo.md`），不是真正的目录名。这里通过判断
-                组名中是否含 `.md` 来跳过这种情况，使本页只显示真实的目录分类。
-            {%- endcomment -%}
-            {% if category.name contains '.md' %}{% continue %}{% endif %}
+            {% assign first_post = category.items | first %}
+            {% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
+            {% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}
             <div class="one-tag-list">
                 <span class="fa fa-folder-open listing-seperator" id="{{ category.name }}">
                     <span class="tag-text">_posts/{{ category.name }}/</span>

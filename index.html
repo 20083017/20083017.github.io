@@ -13,7 +13,9 @@ description: "Thinking will not overcome fear but action will."
     </div>
     <div class="tags">
         {% for folder in post_folders %}
-        {% if folder.name contains '.md' %}{% continue %}{% endif %}
+        {% assign first_post = folder.items | first %}
+        {% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
+        {% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}
         <a href="{{ site.baseurl }}/categories/#{{ folder.name }}" title="_posts/{{ folder.name }}/" rel="{{ folder.items.size }}">{{ folder.name }} ({{ folder.items.size }})</a>
         {% endfor %}
     </div>
