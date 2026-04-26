@@ -37,16 +37,15 @@ header-img: "img/tag-bg.jpg"
 
             <!-- 目录云 -->
             <div id='tag_cloud' class="tags">
-                {% for category in grouped %}
-                {% assign first_post = category.items | first %}
-                {% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
-                {% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}
-                <a href="#{{ category.name }}" title="_posts/{{ category.name }}/" rel="{{ category.items.size }}">{{ category.name }} ({{ category.items.size }})</a>
-                {% endfor %}
+                {% include post-folder-cloud.html href_prefix="#" %}
             </div>
 
             <!-- 目录列表 -->
             {% for category in grouped %}
+            {%- comment -%}
+                只有 `_posts/<folder>/<file>` 这种路径才是真正的子目录分类；
+                直接放在 `_posts/` 根目录下的文章没有 `/`，这里跳过。
+            {%- endcomment -%}
             {% assign first_post = category.items | first %}
             {% assign first_post_relpath = first_post.path | remove_first: '_posts/' %}
             {% unless first_post_relpath contains '/' %}{% continue %}{% endunless %}
