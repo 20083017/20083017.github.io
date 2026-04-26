@@ -5,7 +5,8 @@
     参数：
     - mode：`cloud` 输出目录链接云；`list` 输出每个目录下的文章列表。
     - href_prefix：链接前缀，例如首页使用 `/categories/#`，目录页使用 `#`。
-    - prepend_baseurl：为 true 时给 href_prefix 加上 site.baseurl，用于跨页面跳转。
+    - prepend_baseurl：为 true 时把 site.baseurl 放在 href_prefix 前面；
+      此时 href_prefix 应是站点根路径下的绝对路径片段，例如 `/categories/#`。
 {%- endcomment -%}
 {% assign post_folder_groups = site.posts | group_by_exp: "post", "post.path | remove_first: '_posts/' | split: '/' | first" | sort: "name" %}
 {% for folder in post_folder_groups %}
@@ -19,6 +20,8 @@
     </span>
     {% assign sorted_posts = folder.items | sort: "date" | reverse %}
     {% for post in sorted_posts %}
+    {% assign post_relpath = post.path | remove_first: '_posts/' %}
+    {% unless post_relpath contains '/' %}{% continue %}{% endunless %}
     <div class="post-preview">
         <a href="{{ post.url | prepend: site.baseurl }}">
             <h2 class="post-title">
@@ -38,9 +41,10 @@
 {% else %}
 {% assign folder_href_prefix = include.href_prefix | default: '#' %}
 {% if include.prepend_baseurl %}
-{% assign folder_href_prefix = folder_href_prefix | prepend: site.baseurl %}
-{% endif %}
+{% capture folder_href %}{{ site.baseurl }}{{ folder_href_prefix }}{{ folder.name }}{% endcapture %}
+{% else %}
 {% capture folder_href %}{{ folder_href_prefix }}{{ folder.name }}{% endcapture %}
+{% endif %}
 <a href="{{ folder_href }}" title="_posts/{{ folder.name }}/" rel="{{ folder.items.size }}">{{ folder.name }} ({{ folder.items.size }})</a>
 {% endif %}
 {% endfor %}
