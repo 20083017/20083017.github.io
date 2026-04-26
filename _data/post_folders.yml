@@ -1,0 +1,42 @@
+android:
+  title: Android
+  description: Android 开发与问题记录
+build:
+  title: 构建工具
+  description: 编译、构建与工程化笔记
+cpp:
+  title: C++
+  description: C++ 语法、工程与实践记录
+debug:
+  title: 调试排障
+  description: 调试手段与问题定位笔记
+devops:
+  title: DevOps
+  description: 运维、部署与平台工具记录
+jenkins:
+  title: Jenkins
+  description: Jenkins 设计、使用与排障
+leetcode:
+  title: LeetCode
+  description: 算法题与刷题笔记
+life:
+  title: 生活随笔
+  description: 日常记录与杂谈
+misc:
+  title: 杂项记录
+  description: 难归类但有用的技术笔记
+network:
+  title: 网络编程
+  description: 网络、并发与通信相关内容
+notes:
+  title: 学习笔记
+  description: 零散知识点与学习摘记
+perf:
+  title: 性能优化
+  description: 性能分析与优化相关笔记
+python:
+  title: Python
+  description: Python 开发与脚本实践
+tools:
+  title: 工具技巧
+  description: 常用工具、编辑器与效率技巧
