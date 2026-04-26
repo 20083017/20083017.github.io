@@ -20,8 +20,6 @@
     </span>
     {% assign sorted_posts = folder.items | sort: "date" | reverse %}
     {% for post in sorted_posts %}
-    {% assign post_relpath = post.path | remove_first: '_posts/' %}
-    {% unless post_relpath contains '/' %}{% continue %}{% endunless %}
     <div class="post-preview">
         <a href="{{ post.url | prepend: site.baseurl }}">
             <h2 class="post-title">
@@ -45,6 +43,6 @@
 {% else %}
 {% capture folder_href %}{{ folder_href_prefix }}{{ folder.name }}{% endcapture %}
 {% endif %}
-<a href="{{ folder_href }}" title="_posts/{{ folder.name }}/" rel="{{ folder.items.size }}">{{ folder.name }} ({{ folder.items.size }})</a>
+<a href="{{ folder_href }}" title="_posts/{{ folder.name }}/" data-count="{{ folder.items.size }}">{{ folder.name }} ({{ folder.items.size }})</a>
 {% endif %}
 {% endfor %}

@@ -3,7 +3,7 @@
   $.fn.tagcloud = function(options) {
     var opts = $.extend({}, $.fn.tagcloud.defaults, options);
     tagWeights = this.map(function(){
-      return $(this).attr("rel");
+      return tagWeight($(this));
     });
     tagWeights = jQuery.makeArray(tagWeights).sort(compareWeights);
     lowest = tagWeights[0];
@@ -19,7 +19,7 @@
       colorIncr = colorIncrement (opts.color, range);
     }
     return this.each(function() {
-      weighting = $(this).attr("rel") - lowest;
+      weighting = tagWeight($(this)) - lowest;
       if (opts.size) {
         $(this).css({"font-size": opts.size.start + (weighting * fontIncr) + opts.size.unit});
       }
@@ -33,6 +33,10 @@
   $.fn.tagcloud.defaults = {
     size: {start: 14, end: 18, unit: "pt"}
   };
+
+  function tagWeight (tag) {
+    return tag.data("count") || tag.attr("rel");
+  }
 
   // Converts hex to an RGB array
   function toRGB (code) {
