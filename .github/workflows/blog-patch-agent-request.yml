@@ -35,6 +35,7 @@ jobs:
           changed_files=""
 
           if [ -z "$topic" ]; then
+              # Keep this parser inline so the workflow can create the issue without checking out the repo.
               mapfile -t patch_files < <(python3 - <<'PY'
           import json
           import os

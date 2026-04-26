@@ -21,6 +21,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 topic_raw="$1"
 shift
 
+# Keep topic names path-safe: replace slashes/spaces with hyphens, then trim edge hyphens.
 topic="$(printf '%s' "$topic_raw" | sed -E 's#[/[:space:]]+#-#g; s#^-+##; s#-+$##')"
 
 if [ -z "$topic" ] || [ "$topic" = "." ] || [ "$topic" = ".." ]; then
