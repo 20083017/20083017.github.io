@@ -6,8 +6,8 @@
  * Register service worker.
  * ========================================================== */
 
-const PRECACHE = 'precache-v1';
-const RUNTIME = 'runtime';
+const PRECACHE = 'precache-v2';
+const RUNTIME = 'runtime-v2';
 const HOSTNAME_WHITELIST = [
   self.location.hostname//,
  // "huangxuan.me",
@@ -95,7 +95,15 @@ self.addEventListener('install', e => {
  */
 self.addEventListener('activate',  event => {
   console.log('service worker activated.')
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys()
+      .then(cacheNames => Promise.all(
+        cacheNames
+          .filter(cacheName => cacheName !== PRECACHE && cacheName !== RUNTIME)
+          .map(cacheName => caches.delete(cacheName))
+      ))
+      .then(() => self.clients.claim())
+  );
 });
 
 
@@ -127,21 +135,33 @@ self.addEventListener('fetch', event => {
     const fixedUrl = getFixedUrl(event.request);
     const fetched = fetch(fixedUrl, {cache: "no-store"});
     const fetchedCopy = fetched.then(resp => resp.clone());
+    const isHtmlNavigation = isNavigationReq(event.request);
 
-    // Call respondWith() with whatever we get first.
-    // If the fetch fails (e.g disconnected), wait for the cache.
-    // If there’s nothing in cache, wait for the fetch. 
-    // If neither yields a response, return offline pages.
-    event.respondWith(
-      Promise.race([fetched.catch(_ => cached), cached])
-        .then(resp => resp || fetched)
-        .catch(_ => caches.match('offline.html'))
-    );
+    if (isHtmlNavigation) {
+      event.respondWith(
+        fetched
+          .then(resp => resp || cached)
+          .catch(_ => cached.then(resp => resp || caches.match('offline.html')))
+      );
+    } else {
+      // Call respondWith() with whatever we get first.
+      // If the fetch fails (e.g disconnected), wait for the cache.
+      // If there’s nothing in cache, wait for the fetch.
+      // If neither yields a response, return offline pages.
+      event.respondWith(
+        Promise.race([fetched.catch(_ => cached), cached])
+          .then(resp => resp || fetched)
+          .catch(_ => caches.match('offline.html'))
+      );
+    }
 
     // Update the cache with the version we fetched (only for ok status)
     event.waitUntil(
       Promise.all([fetchedCopy, caches.open(RUNTIME)])
-        .then(([response, cache]) => response.ok && cache.put(event.request, response))
+        .then(([response, cache]) => {
+          if (!response.ok || isHtmlNavigation) return;
+          return cache.put(event.request, response);
+        })
         .catch(_ => {/* eat any errors */})
     );
   }
