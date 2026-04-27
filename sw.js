@@ -159,7 +159,8 @@ self.addEventListener('fetch', event => {
     event.waitUntil(
       Promise.all([fetchedCopy, caches.open(RUNTIME)])
         .then(([response, cache]) => {
-          if (!response.ok || isHtmlNavigation) return;
+          // Keep navigation HTML network-first so newly deployed pages replace stale copies immediately.
+          if (isHtmlNavigation || !response.ok) return;
           return cache.put(event.request, response);
         })
         .catch(_ => {/* eat any errors */})
