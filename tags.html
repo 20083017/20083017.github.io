@@ -1,7 +1,6 @@
 ---
 title: Tags
 layout: default
-description: keep hungry keep foolish
 header-img: "img/tag-bg.jpg"
 ---
 
@@ -12,7 +11,6 @@ header-img: "img/tag-bg.jpg"
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                 <div class="site-heading" id="tag-heading">
                     <h1>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</h1>
-                    <span class="subheading">{{ page.description }}</span>
                 </div>
             </div>
         </div>
@@ -23,13 +21,6 @@ header-img: "img/tag-bg.jpg"
 <div class="container">
 	<div class="row">
 		<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-            <!-- 标签云 -->
-			<div id='tag_cloud' class="tags">
-				{% for tag in site.tags %}
-				<a href="#{{ tag[0] }}" title="{{ tag[0] }}" rel="{{ tag[1].size }}">{{ tag[0] }}</a>
-				{% endfor %}
-			</div>
-
             <!--<blockquote class="tag-comments">
                 标签命名规范：
                     <li>行业观察、职位、公司优先使用中文</li>
