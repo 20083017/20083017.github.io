@@ -51,11 +51,11 @@ jobs:
 
   deployment:
     needs: build
-    if: ${{ needs.build.result == 'success' }}
+    if: ${{ always() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || '' }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
