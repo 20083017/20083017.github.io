@@ -2,7 +2,11 @@ name: Site build
 
 on:
   push:
+    branches:
+      - master
   pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
 permissions:
@@ -22,6 +26,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -51,13 +58,12 @@ jobs:
 
   deployment:
     needs: build
-    if: ${{ always() && needs.build.result == 'success' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url || '' }}
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        if: ${{ github.event_name != 'pull_request' }}
         uses: actions/deploy-pages@v4
