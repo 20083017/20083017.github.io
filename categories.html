@@ -1,7 +1,6 @@
 ---
 title: 文章目录
 layout: default
-description: 按 `_posts` 子文件夹浏览文章
 header-img: "img/tag-bg.jpg"
 ---
 
@@ -28,11 +27,6 @@ header-img: "img/tag-bg.jpg"
                 从 `post.path` 解析出第一级目录作为分组键，并跳过直接放在
                 `_posts/` 根目录（没有子目录可作为分类）的 post。
             {%- endcomment -%}
-            <!-- 目录云 -->
-            <div id='tag_cloud' class="tags">
-                {% include post-folder-browser.html mode="cloud" %}
-            </div>
-
             <!-- 目录列表 -->
             {% include post-folder-browser.html mode="list" %}
 
