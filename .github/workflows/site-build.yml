@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: site-build-${{ github.ref }}
@@ -31,3 +33,31 @@ jobs:
 
       - name: Build site
         run: jekyll build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  report_build_status:
+    needs: build
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report build result
+        run: |
+          echo "Build result: ${{ needs.build.result }}"
+          test "${{ needs.build.result }}" = "success"
+
+  deployment:
+    needs: build
+    if: ${{ needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip GitHub Pages deploy for pull requests
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "Deployment stage triggered after build, but GitHub Pages deploy is skipped for pull requests."
+
+      - name: Deploy to GitHub Pages
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/deploy-pages@v4
