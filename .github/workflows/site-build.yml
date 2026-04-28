@@ -53,11 +53,11 @@ jobs:
     needs: build
     if: ${{ needs.build.result == 'success' }}
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Skip GitHub Pages deploy for pull requests
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "Deployment stage triggered after build, but GitHub Pages deploy is skipped for pull requests."
-
       - name: Deploy to GitHub Pages
+        id: deployment
         if: ${{ github.event_name != 'pull_request' }}
         uses: actions/deploy-pages@v4
