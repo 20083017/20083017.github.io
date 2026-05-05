@@ -1,0 +1,30 @@
+
+
+https://www.cnblogs.com/jabnih/p/4814212.html
+
+
+# 删除以某字符开头的redis key
+
+ ./redis-cli -h ip -p port  keys "GO*" | xargs redis-cli  -h ip -p port   del
+ 
+ 
+# 批量执行redis命令
+cat ./batchcmd.txt | redis-cli -h [$Host] -a [$Password]
+
+
+# 大key删除
+
+不要直接 delete，单进程
+要使用 unlink 命令！！！
+
+
+# hiredis mget命令的坑
+
+但是在构造MGET命令时，我犯了一个很弱智的错误，就是redisCommand命令这里，当使用%s时，表示后面的字符串中不含有空格的，但是我将这些key拼起来时，特意加了空格，这就是我获取失败的原因。这里是原型定义
+
+void *redisCommand(redisContext *c, const char *format, ...);
+这里说明一个redisCommand的用法，在C++环境中，可以只要format常量字符串，不要后面的变量，但是如果你非要的话，一定要保证它们是单个不含空格的字符串。
+
+
+
+https://blog.csdn.net/tao_627/article/details/38685031

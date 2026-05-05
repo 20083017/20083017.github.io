@@ -1,0 +1,10 @@
+
+
+import chardet
+
+byte_str = b"\347\231\276\345\272\246"
+byte_str_charset = chardet.detect(byte_str)
+
+byte_str = str(byte_str, byte_str_charset.get('encoding'))
+
+print(byte_str)
