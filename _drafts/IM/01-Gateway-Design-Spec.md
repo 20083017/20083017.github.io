@@ -17,6 +17,8 @@
 11. [性能与调优](#11-性能与调优)
 12. [关键数据结构](#12-关键数据结构)
 
+13. [客户端负载均衡与服务发现](#13-客户端负载均衡与服务发现)
+
 ---
 
 # 1. 职责与定位
@@ -106,6 +108,17 @@
 ---
 
 # 3. 连接管理
+
+### 3.x 连接重连与指数退避
+
+客户端在连接断开或异常时，建议采用指数退避策略进行重连：
+
+- 首次失败：1s 后重试
+- 连续失败：指数退避 1s → 2s → 4s → 8s → 16s（最大 60s），每次带 ±20% 抖动
+- 总次数不限，但应在 UI 层提示用户
+- 网络变化/前后台切换时可立即重试
+
+服务端可通过 RECONNECT_HINT 等协议建议客户端重连时机与间隔。
 
 ## 3.1 连接表设计
 
@@ -1164,6 +1177,19 @@ func (g *Gateway) cpuPressureCheck() {
 
 # 11. 性能与调优
 
+## 11.x Socket Options 优化建议
+
+为提升高并发下的连接性能，建议在 Gateway 启动时设置如下 socket 选项：
+
+- TCP_NODELAY：关闭 Nagle 算法，降低延迟
+- SO_REUSEADDR / SO_REUSEPORT：端口复用，提升重启与多进程能力
+- SO_KEEPALIVE：检测死连接，建议设置较长间隔
+- TCP_KEEPIDLE/TCP_KEEPINTVL/TCP_KEEPCNT：细化 keepalive 策略
+- QUIC 场景下，增大 UDP rmem/wmem buffer
+- epoll 相关参数优化
+
+具体参数见 11.1 OS 调优章节。
+
 ## 11.1 OS 调优
 
 ```bash
@@ -1230,6 +1256,137 @@ func init() {
 ---
 
 # 12. 关键数据结构
+
+---
+
+# 13. 客户端负载均衡与服务发现
+
+## 13.1 Server IP 获取方式
+
+客户端可通过多种方式获取 Gateway server IP：
+
+- 标准 DNS 解析（A/AAAA 记录）
+- HTTPDNS（API 拉取，防劫持）
+- 配置下发（如业务下发 server 列表）
+
+建议优先采用 HTTPDNS，失败时 fallback 到本地 DNS，或多通道并发解析。
+
+## 13.2 负载均衡与优选策略
+
+### 13.2.3 Server 热切换（Hot Switch）
+
+#### 设计目标
+- 保证客户端在 server 异常、网络变化、配置刷新等场景下，能无感知或低感知地切换到可用 server，提升可用性与体验。
+
+#### 典型触发条件
+- 当前 server 检测到连接断开、心跳超时、消息收发异常等
+- 网络切换（如 WiFi/4G 切换、IP 变化）
+- server 地址列表有更新（如 HTTPDNS 拉取、配置下发变更）
+- 服务端主动下发 RECONNECT_HINT、KICK 等信令
+
+#### 热切换流程
+1. 检测到切换条件，立即暂停当前连接的消息收发
+2. 选择下一个健康 server，发起新连接（可并发尝试多个）
+3. 新连接建立后，完成鉴权/登录/同步等初始化，确保新连接完全可用
+4. 仅在新连接鉴权成功后，将消息收发切换到新连接，必要时补发未确认消息
+5. 关闭旧连接，释放资源
+6. 记录切换事件，便于埋点与问题追踪
+
+> 注意：应保证热切换时，用户优先登录到与上次一致的 server 集群（如同一大区/region），除非该集群整体不可用。只有在原集群不可用时，才考虑切换到其他集群，避免频繁跨集群迁移带来的会话同步、漫游等一致性问题。
+
+#### 注意事项
+- 切换过程需保证消息不丢失、不重复（可结合消息队列、重发机制）
+- 切换期间 UI 层可适当提示用户（如“正在重连”）
+- 支持多路并发连接尝试，优先用最快建立的 server
+- 切换后需重新同步会话、未读、离线消息等
+
+#### 伪代码示例
+```python
+def hot_switch(selector, current_ip):
+    # 1. 标记当前 server 异常
+    selector.mark_bad(current_ip)
+    # 2. 选择新 server
+    new_ip = selector.pick()
+    # 3. 发起新连接
+    if connect(new_ip):
+        # 4. 初始化（鉴权/同步）
+        login(new_ip)
+        sync_state(new_ip)
+        # 5. 恢复消息收发
+        resume_message_queue()
+        # 6. 关闭旧连接
+        close(current_ip)
+        log('hot switch success', new_ip)
+    else:
+        # 失败可重试或 fallback
+        log('hot switch failed', new_ip)
+```
+
+> 实际实现需结合平台网络库、消息队列、状态同步等机制，保证切换平滑。
+
+- 支持多 server 地址优选，按地理位置、权重、健康状态等排序
+- 支持 server IP 缓存与健康探测，自动切换异常节点
+- 支持 server 优先级、权重、地理亲和等策略
+
+### 13.2.1 客户端负载均衡典型流程
+
+1. 启动时拉取 server 列表（HTTPDNS、配置下发、DNS 解析等）
+2. 按优先级/权重/地理位置等排序 server 列表
+3. 依次尝试连接 server，优先健康节点
+4. 连接建立后，定期健康探测（如心跳、ping）
+5. 检测到 server 异常时，自动切换到下一个健康 server
+6. 支持 server 地址动态刷新与热切换
+
+### 13.2.2 客户端伪代码示例
+
+```python
+class ServerSelector:
+    def __init__(self, server_list):
+        self.server_list = server_list  # [(ip, weight, region, ...)]
+        self.health = {ip: True for ip, *_ in server_list}
+
+    def pick(self):
+        # 按健康、权重、地理优先排序
+        healthy = [s for s in self.server_list if self.health[s[0]]]
+        if not healthy:
+            healthy = self.server_list
+        # 简单轮询或加权随机
+        return healthy[0][0]
+
+    def mark_bad(self, ip):
+        self.health[ip] = False
+
+    def refresh(self, new_list):
+        self.server_list = new_list
+        for ip, *_ in new_list:
+            if ip not in self.health:
+                self.health[ip] = True
+
+# 使用示例
+selector = ServerSelector([("1.1.1.1", 10, "east"), ("2.2.2.2", 5, "west")])
+ip = selector.pick()
+try:
+    connect(ip)
+except Exception:
+    selector.mark_bad(ip)
+    ip = selector.pick()
+    connect(ip)
+```
+
+> 实际实现可结合平台特性（如 Android/iOS 网络库），支持并发探测、优选、自动切换等。
+
+## 13.3 选型说明
+
+- DNS 方案简单，易于维护，但易被劫持
+- HTTPDNS 可提升可靠性，适合移动端
+- 配置下发适合特殊场景（如企业专线）
+
+## 13.4 相关配置与扩展
+
+- 支持 server 地址动态刷新与热切换
+- 支持服务端通过 RECONNECT_HINT 等协议建议切换 server
+
+---
 
 ## 12.1 服务发现注册
 
